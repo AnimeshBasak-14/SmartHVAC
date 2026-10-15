@@ -72,5 +72,8 @@ Project/
 ```
 
 ## Team (Group 3)
-Animesh Basak (26911001) · Dhruv Aggarwal (26911004) · Ankit Kumar (26911002) ·
-Saurav Kumar Boro (26535026) · Kriti Vajpayee (25931008)
+- [Animesh Basak](https://github.com/AnimeshBasak-14) (26911001)
+- [Dhruv Aggarwal](https://github.com/dhruvaggarwal419) (26911004)
+- [Ankit Kumar](https://github.com/ankit-kr04) (26911002)
+- [Saurav Kumar Boro](https://github.com/SauravBoro) (26535026)
+- [Kriti Vajpayee](https://github.com/kriti25122001) (25931008)
