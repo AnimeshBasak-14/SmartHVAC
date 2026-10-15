@@ -43,9 +43,26 @@ def building_from_shape(i, orientation=2, glazing_area=0.25, glazing_distributio
 
 
 def load_bundle(path=config.MODEL_BUNDLE):
-    if not path.exists():
-        raise FileNotFoundError(f"{path} not found. Train first:  python run_all.py")
-    return joblib.load(path)
+    if path.exists():
+        try:
+            return joblib.load(path)
+        except Exception:
+            pass
+    # Cloud fallback: automatically train bundle if missing or unpickling fails
+    from src.data import load_data, split_data
+    from src.train import build_bundle, train_classifiers, train_regressors
+
+    df = load_data()
+    train, val, test = split_data(df)
+    _, _, art = train_regressors(train, val, test, quick=True)
+    _, clf, classifier = train_classifiers(train, val, test, art, quick=True)
+    bundle = build_bundle(art, clf, classifier)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        joblib.dump(bundle, path)
+    except Exception:
+        pass
+    return bundle
 
 
 def _frame(buildings):

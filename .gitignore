@@ -4,6 +4,5 @@ __pycache__/
 *.pyc
 .pytest_cache/
 docs/
-outputs/models/
 outputs/*.pid
 outputs/nohup_full_run.txt
