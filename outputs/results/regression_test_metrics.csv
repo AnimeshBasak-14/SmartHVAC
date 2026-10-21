@@ -1,3 +1,0 @@
-target,model,params,test_MAE,test_RMSE,test_R2,baseline_RMSE,interval_margin,interval_coverage_test
-heating_load,Gradient Boosting,"{'learning_rate': 0.1, 'max_depth': 4, 'n_estimators': 500}",0.2607269597293898,0.4145181742037961,0.9983374176729795,10.178980357519533,0.5472401626751351,0.8793103448275862
-cooling_load,Gradient Boosting,"{'learning_rate': 0.1, 'max_depth': 4, 'n_estimators': 500}",0.5646275723155203,0.8410226762577493,0.9921081195264859,9.478097757133492,1.442543052763925,0.9051724137931034

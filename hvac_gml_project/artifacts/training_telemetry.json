@@ -1,0 +1,148 @@
+{
+  "status": "COMPLETED",
+  "device": "cuda:0",
+  "fp16_amp_enabled": true,
+  "best_loss": 235.2314,
+  "annual_revenue_inr": 24022953.31,
+  "annual_expenditure_inr": 3067011.73,
+  "annual_net_profit_inr": 20955941.61,
+  "mean_cost_efficiency_ratio": 7.924,
+  "mean_cost_efficiency_gain_pct": 9.8,
+  "training_history": [
+    {
+      "epoch": 1,
+      "avg_total_loss": 23057.1211,
+      "demand_mse": 15164.8661,
+      "maintenance_loss": 3.8481,
+      "sleeper_churn_bce": 0.6872,
+      "inventory_mse": 7885.658,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 0.87
+    },
+    {
+      "epoch": 10,
+      "avg_total_loss": 558.2476,
+      "demand_mse": 326.9057,
+      "maintenance_loss": 0.8143,
+      "sleeper_churn_bce": 0.6438,
+      "inventory_mse": 229.3479,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 3.58
+    },
+    {
+      "epoch": 20,
+      "avg_total_loss": 676.6607,
+      "demand_mse": 579.6866,
+      "maintenance_loss": 0.7676,
+      "sleeper_churn_bce": 0.6213,
+      "inventory_mse": 95.0772,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 6.37
+    },
+    {
+      "epoch": 30,
+      "avg_total_loss": 862.0443,
+      "demand_mse": 576.5406,
+      "maintenance_loss": 0.8186,
+      "sleeper_churn_bce": 0.5431,
+      "inventory_mse": 283.6241,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 9.33
+    },
+    {
+      "epoch": 40,
+      "avg_total_loss": 253.3931,
+      "demand_mse": 159.122,
+      "maintenance_loss": 0.754,
+      "sleeper_churn_bce": 0.572,
+      "inventory_mse": 92.4538,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 12.56
+    },
+    {
+      "epoch": 50,
+      "avg_total_loss": 582.9437,
+      "demand_mse": 370.1112,
+      "maintenance_loss": 0.8815,
+      "sleeper_churn_bce": 0.5218,
+      "inventory_mse": 210.8839,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 15.32
+    },
+    {
+      "epoch": 60,
+      "avg_total_loss": 590.4159,
+      "demand_mse": 430.3065,
+      "maintenance_loss": 0.7599,
+      "sleeper_churn_bce": 0.4999,
+      "inventory_mse": 158.3696,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 18.05
+    },
+    {
+      "epoch": 70,
+      "avg_total_loss": 381.7444,
+      "demand_mse": 210.5001,
+      "maintenance_loss": 0.7483,
+      "sleeper_churn_bce": 0.5021,
+      "inventory_mse": 169.5194,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 20.82
+    },
+    {
+      "epoch": 80,
+      "avg_total_loss": 459.9372,
+      "demand_mse": 321.36,
+      "maintenance_loss": 0.752,
+      "sleeper_churn_bce": 0.5736,
+      "inventory_mse": 136.7609,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 23.67
+    },
+    {
+      "epoch": 90,
+      "avg_total_loss": 326.2291,
+      "demand_mse": 222.0268,
+      "maintenance_loss": 0.7526,
+      "sleeper_churn_bce": 0.5226,
+      "inventory_mse": 102.4463,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 26.54
+    },
+    {
+      "epoch": 100,
+      "avg_total_loss": 384.4239,
+      "demand_mse": 184.7969,
+      "maintenance_loss": 0.7465,
+      "sleeper_churn_bce": 0.5114,
+      "inventory_mse": 197.8937,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 29.87
+    },
+    {
+      "epoch": 110,
+      "avg_total_loss": 524.3395,
+      "demand_mse": 339.1875,
+      "maintenance_loss": 0.7669,
+      "sleeper_churn_bce": 0.4815,
+      "inventory_mse": 183.4239,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 32.71
+    },
+    {
+      "epoch": 120,
+      "avg_total_loss": 310.9335,
+      "demand_mse": 234.0292,
+      "maintenance_loss": 0.7328,
+      "sleeper_churn_bce": 0.5048,
+      "inventory_mse": 75.1992,
+      "v100_vram_mb": 28.77,
+      "elapsed_sec": 35.25
+    }
+  ],
+  "cypher_queries": {
+    "1_full_hetero_subgraph": "MATCH (l:Location)<-[:LOCATED_IN]-(r:Resident)-[:OWNS]->(d:Device)-[:REQUIRES_PART]->(p:InventoryPart) RETURN l, r, d, p LIMIT 150",
+    "2_sleeper_churn_cross_sell": "MATCH (r:Resident)-[:OWNS]->(d:Device {category: 'Cooling_HVAC'}) WHERE r.base_app_engagement < 0.45 MATCH (h:Device {category: 'Heating_Induction_Kettle'}) RETURN r, d, h LIMIT 50",
+    "3_high_risk_hvac_parts": "MATCH (l:Location {location_type: 'Metropolitan'})<-[:LOCATED_IN]-(r:Resident)-[:OWNS]->(d:Device)-[:REQUIRES_PART]->(p:InventoryPart) WHERE d.base_failure_risk > 0.12 RETURN l, d, p LIMIT 80"
+  }
+}

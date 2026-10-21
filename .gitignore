@@ -1,8 +1,22 @@
-.venv/
-venv/
+# Python & PyTorch
 __pycache__/
-*.pyc
-.pytest_cache/
-docs/
-outputs/*.pid
-outputs/nohup_full_run.txt
+*.py[cod]
+*$py.class
+*.pt
+*.pth
+*.joblib
+*.pkl
+
+# Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Streamlit & Web
+.streamlit/
+*.html
+
+# Data & Large Artifacts
+hvac_gml_project/artifacts/*.pt
+hvac_gml_project/artifacts/*.log
