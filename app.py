@@ -13,3 +13,4 @@ if PROJECT_DIR not in sys.path:
 
 # Run the command center dashboard
 import dashboard_app
+
