@@ -20,3 +20,5 @@ hvac_gml_project/artifacts/pyvis_sub_graph.html
 # Data & Large Artifacts
 hvac_gml_project/artifacts/*.pt
 hvac_gml_project/artifacts/*.log
+*.zip
+*.xlsx
