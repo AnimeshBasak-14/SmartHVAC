@@ -27,45 +27,34 @@ The system is accelerated via **NVIDIA Tesla V100 GPU (FP16 Mixed Precision)**, 
 
 ---
 
-## 🔄 Machine Learning Lifecycle Alignment
+## 🔄 Machine Learning Lifecycle Documentation Suite
 
-The pipeline maps directly to the standard 10-stage ML lifecycle:
+The project implements the complete 10-stage Machine Learning Lifecycle, detailed in dedicated technical documentation files:
 
-```mermaid
-flowchart LR
-    P01["01. Problem Definition"] --> P02["02. Data Collection"]
-    P02 --> P03["03. Data Preprocessing"]
-    P03 --> P04["04. Exploratory Analysis"]
-    P04 --> P05["05. Feature Engineering"]
-    P05 --> P06["06. Model Selection"]
-    P06 --> P07["07. Model Training (V100)"]
-    P07 --> P08["08. Evaluation & Tuning"]
-    P08 --> P09["09. Deployment (Streamlit)"]
-    P09 --> P10["10. Monitoring & Self-Healing"]
-```
-
-1. **01. Problem Definition**: Solving non-I.I.D. multi-objective optimization across interconnected appliances, customers, locations, and components.
-2. **02. Data Collection**: Relational ingestion of `locations.csv`, `devices.csv`, `parts.csv`, `residents.csv`, and bidirectional edge CSVs.
-3. **03. Data Preprocessing**: Unit price, power, and temperature scaling with type-safe integer indexing to eliminate missing node assertions.
-4. **04. Exploratory Data Analysis (EDA)**: Temperature vs. grid stability distributions, power vs. failure scatter matrices, and customer engagement histograms.
-5. **05. Feature Engineering**: Cyclical temporal features ($\sin(2\pi(m-1)/12), \cos(2\pi(m-1)/12)$) and regional climate regime multipliers.
-6. **06. Model Selection**: Multi-task `HeteroConv` architecture with bipartite `SAGEConv` message passing and latent dot-product link prediction.
-7. **07. Model Training**: 120-epoch training on NVIDIA Tesla V100 GPU utilizing PyTorch FP16 Automatic Mixed Precision (`GradScaler`).
-8. **08. Model Evaluation & Tuning**: Tracking 4 multi-task loss components, learning rate self-healing, and auditing monthly financial metrics.
-9. **09. Model Deployment**: Interactive Command Center accessible locally, on lab networks, and deployable via Streamlit Cloud.
-10. **10. Model Monitoring & Maintenance**: JSON telemetry logging, max VRAM tracking, and Neo4j Bolt graph database synchronization.
+* 📖 **[ML Lifecycle Master Overview](docs/ml_lifecycle/README.md)**
+1. **[01. Problem Definition](docs/ml_lifecycle/01_Problem_Definition.md)**: 4 multi-task pillars, seasonal climate shifts, mathematical graph formulation.
+2. **[02. Data Collection](docs/ml_lifecycle/02_Data_Collection.md)**: UCI AI4I 2020 (601), UCI Online Retail II (502), Kaggle HVAC Power (`felixpradoh`).
+3. **[03. Data Preprocessing](docs/ml_lifecycle/03_Data_Cleaning_and_Preprocessing.md)**: Cancellation filtering, rotational power derivation, graph bipartite sanitization.
+4. **[04. Exploratory Analysis (EDA)](docs/ml_lifecycle/04_Exploratory_Data_Analysis.md)**: 12 seasonal climate regimes, failure correlation analysis, customer RFM distributions.
+5. **[05. Feature Engineering](docs/ml_lifecycle/05_Feature_Engineering_and_Selection.md)**: Continuous cyclical month encoding ($\sin/\cos$), 8-dimensional dense node features.
+6. **[06. Model Selection](docs/ml_lifecycle/06_Model_Selection.md)**: Multi-task `HeteroConv` architecture with bipartite `SAGEConv` and link prediction.
+7. **[07. Model Training](docs/ml_lifecycle/07_Model_Training.md)**: Training on NVIDIA Tesla V100 GPU (`10.13.1.7`) with FP16 AMP mixed precision.
+8. **[08. Model Evaluation & Tuning](docs/ml_lifecycle/08_Model_Evaluation_and_Tuning.md)**: **Fine-tuning audit results**: $-65.85\%$ Dossier Loss, $+0.157$ Failure F1, $+0.249$ Churn F1.
+9. **[09. Model Deployment](docs/ml_lifecycle/09_Model_Deployment.md)**: Streamlit Cloud, standalone offline browser dashboard (`ARGOS_BROWSER_RESULTS.html`), Neo4j.
+10. **[10. Model Monitoring & Maintenance](docs/ml_lifecycle/10_Model_Monitoring_and_Maintenance.md)**: Continuous telemetry logging, climate covariate drift, concept drift protocols.
 
 ---
 
-## ⚡ Audited Business & Financial KPIs
+## ⚡ Audited Business & Financial KPIs (Fine-Tuned on Tesla V100)
 
-Trained across all 12 calendar months on the Tesla V100 GPU, the pipeline demonstrates strictly positive net profit and dramatic operational savings:
+Calibrated across all 12 calendar months on the Tesla V100 GPU, the pipeline demonstrates strictly positive net profit and dramatic operational savings:
 
-* **Annual Revenue**: **₹2,40,22,953.31** (~₹2.40 Crore INR)
-* **Annual Operating Expenditure**: **₹30,67,011.73** (~₹30.67 Lakh INR)
-* **Annual Net Profit**: **₹2,09,55,941.61** (~₹2.10 Crore INR)
-* **Mean Cost-Efficiency Ratio**: **7.924x** (Revenue generates ~7.9x operating expenditure)
-* **Mean Cost Savings Gain**: **+9.80%** (Proactive GML maintenance vs. reactive breakdown repairs)
+* **Annual Gross Revenue**: **₹2,60,71,851.84** (~₹2.61 Crore INR)
+* **Annual Operating Expenditure (OPEX)**: **₹34,00,492.40** (~₹34.00 Lakh INR)
+* **Annual Net Profit**: **₹2,26,71,359.43** (~₹2.27 Crore INR — 100% positive in every month)
+* **Mean Cost-Efficiency Ratio**: **7.821x** (Revenue generates ~7.8x operating expenditure)
+* **Proactive Breakdown Savings Gain**: **+24.23%** (Avoidance of emergency off-season breakdowns)
+* **Full Audit Dossier**: See **[ARGOS.md](ARGOS.md)** and **[ARGOS_BROWSER_RESULTS.html](ARGOS_BROWSER_RESULTS.html)**.
 
 ---
 
