@@ -134,3 +134,4 @@ $$\text{month\_sin} = \sin(\theta_m), \quad \text{month\_cos} = \cos(\theta_m)$$
 | **`train_and_monitor.py`** | 12 monthly `HeteroData` graphs | Trains the multi-task GNN with PyTorch FP16 AMP on NVIDIA Tesla V100 GPU. |
 | **`business_financial_engine.py`**| Ground truth targets + GNN outputs | Computes audited monthly revenues, maintenance savings, stockout penalties, and net profit. |
 | **`dashboard_app.py`** | CSVs + `artifacts/monthly_financial_metrics.csv` | Renders the interactive Streamlit command center, PyVis subgraphs, and Plotly analytics. |
+

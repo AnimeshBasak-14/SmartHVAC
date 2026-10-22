@@ -5,6 +5,7 @@ Features: Dynamic Month Filtering, Interactive Graph Exploration, Company Busine
 Telemetry Risk Matrix, Churn Retention Engine, and Financial Analytics.
 """
 import os
+import sys
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -12,6 +13,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import streamlit.components.v1 as components
 from pyvis.network import Network
+
 from config import Config
 from data_pipeline import HVACGraphDatasetBuilder, encode_month_features
 from neo4j_connector import Neo4jGraphManager
@@ -29,7 +31,7 @@ st.set_page_config(
 # -------------------------------------------------------------
 st.markdown("""
 <style>
-    /* Fix Streamlit metric truncation (...) */
+    /* Prevent metric truncation */
     [data-testid="stMetricValue"] {
         font-size: 1.45rem !important;
         font-weight: 700 !important;
@@ -181,7 +183,6 @@ with st.expander("🏢 Company Business POV: Multi-Input Cost & Pricing Levers",
         b_cross_cool = st.number_input("Cooling Cross-sell Margin", value=4500.0, step=250.0)
         b_cross_heat = st.number_input("Heating Cross-sell Margin", value=3200.0, step=250.0)
 
-# Instantiate enterprise business inputs object
 biz_inputs = CompanyBusinessInputs(
     base_metro_ticket_cooling=b_metro_cool,
     base_metro_ticket_heating=b_metro_heat,
@@ -202,7 +203,6 @@ biz_inputs = CompanyBusinessInputs(
 # -------------------------------------------------------------
 row_m_orig = df_fin[df_fin["month"] == selected_month].iloc[0]
 
-# Scaled calculations incorporating company business inputs
 metro_demand = float(row_m_orig["metro_demand_units"])
 village_demand = float(row_m_orig["village_demand_units"])
 
@@ -241,7 +241,6 @@ st.caption(
     f"Active Snapshot: **Month {selected_month} ({season_name})**"
 )
 
-# 4 balanced columns to prevent any text truncation or ellipsis (...)
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 
 with kpi1:
@@ -288,7 +287,7 @@ tab_graph, tab_demand, tab_devices, tab_churn, tab_parts, tab_fin, tab_neo4j = s
 ])
 
 # =============================================================
-# TAB 1: INTERACTIVE HETEROGENEOUS GRAPH (ERROR-FREE PYVIS)
+# TAB 1: INTERACTIVE HETEROGENEOUS GRAPH (FAILSAFE IN-MEMORY)
 # =============================================================
 with tab_graph:
     st.subheader(f"Heterogeneous Graph Network Snapshot (Month {selected_month}: {season_name})")
@@ -297,7 +296,6 @@ with tab_graph:
     🔵 **Metro Location** | 🟢 **Village Location** | 🟠 **Active Customer** | 🔴 **Sleeper Customer** | 🔷 **Cooling HVAC** | 🟣 **Heating / Induction Kettle** | 🟡 **Spare Part SKU**
     """)
 
-    # Filter Locations
     filtered_locs = df_loc.copy()
     if loc_filter == "Metropolitan Only":
         filtered_locs = filtered_locs[filtered_locs["is_metropolitan"] == 1]
@@ -306,11 +304,9 @@ with tab_graph:
     sample_locs = filtered_locs.head(12)
     sample_loc_ids = set(sample_locs["location_id"].astype(int))
 
-    # Filter Residents connected to sample locations
     sample_res = df_res[df_res["location_id"].astype(int).isin(sample_loc_ids)].head(max_nodes_viz // 2)
     sample_res_ids = set(sample_res["resident_id"].astype(int))
 
-    # Filter Devices connected to sample residents
     sample_e_dev = e_res_dev[e_res_dev["resident_id"].astype(int).isin(sample_res_ids)].head(max_nodes_viz)
     sample_dev_ids = set(sample_e_dev["device_id"].astype(int))
     sample_devs = df_dev[df_dev["device_id"].astype(int).isin(sample_dev_ids)]
@@ -322,12 +318,10 @@ with tab_graph:
         sample_devs = sample_devs[sample_devs["is_cooling_hvac"] == 0]
         sample_dev_ids = set(sample_devs["device_id"].astype(int))
 
-    # Filter Parts connected to sample devices
     sample_e_parts = e_dev_part[e_dev_part["device_id"].astype(int).isin(sample_dev_ids)].head(35)
     sample_part_ids = set(sample_e_parts["part_id"].astype(int))
     sample_parts = df_part[df_part["part_id"].astype(int).isin(sample_part_ids)]
 
-    # Build PyVis Network safely
     net = Network(height="560px", width="100%", bgcolor="#0e1117", font_color="white", directed=True)
     if physics_engine == "Barnes-Hut (Fast Force)":
         net.barnes_hut(gravity=-3000, central_gravity=0.35, spring_length=110)
@@ -338,21 +332,16 @@ with tab_graph:
 
     existing_node_ids = set()
 
-    # 1. Add Location Nodes (Casting strictly to int)
     for _, l in sample_locs.iterrows():
         lid_int = int(l["location_id"])
         node_key = f"L_{lid_int}"
         color = "#1f77b4" if int(l["is_metropolitan"]) == 1 else "#2ca02c"
         net.add_node(
-            node_key,
-            label=f"{l['name']}",
-            color=color,
-            size=26,
+            node_key, label=f"{l['name']}", color=color, size=26,
             title=f"Location: {l['name']} | Type: {l['location_type']} | Base Temp: {l['base_temp_c']}°C | Grid: {l['grid_stability']}"
         )
         existing_node_ids.add(node_key)
 
-    # 2. Add Resident Nodes
     for _, r in sample_res.iterrows():
         rid_int = int(r["resident_id"])
         node_key = f"R_{rid_int}"
@@ -361,71 +350,57 @@ with tab_graph:
         r_color = "#ff4b4b" if is_sleeper else "#ff9f1c"
         r_label = f"Sleeper_{rid_int}" if is_sleeper else f"Resident_{rid_int}"
         net.add_node(
-            node_key,
-            label=r_label,
-            color=r_color,
-            size=14,
+            node_key, label=r_label, color=r_color, size=14,
             title=f"Resident ID: {rid_int} | App Active: {r['customer_app_active']} | Engagement: {effective_engagement:.2f} | Status: {'SLEEPER' if is_sleeper else 'ACTIVE'}"
         )
         existing_node_ids.add(node_key)
 
-    # 3. Add Device Nodes
     for _, d in sample_devs.iterrows():
         did_int = int(d["device_id"])
         node_key = f"D_{did_int}"
         is_cool = int(d["is_cooling_hvac"]) == 1
         d_color = "#00d4ff" if is_cool else "#9b5de5"
         net.add_node(
-            node_key,
-            label=f"{d['sku_name'][:18]}",
-            color=d_color,
-            size=18,
+            node_key, label=f"{d['sku_name'][:18]}", color=d_color, size=18,
             title=f"Device: {d['sku_name']} | Price: ₹{d['unit_price_inr']:,} | Power: {d['rated_power_kw']} kW | Risk: {d['base_failure_risk']}"
         )
         existing_node_ids.add(node_key)
 
-    # 4. Add Part Nodes
     for _, p in sample_parts.iterrows():
         pid_int = int(p["part_id"])
         node_key = f"P_{pid_int}"
         net.add_node(
-            node_key,
-            label=f"{p['part_name'][:16]}",
-            color="#ffd166",
-            size=15,
+            node_key, label=f"{p['part_name'][:16]}", color="#ffd166", size=15,
             title=f"Part: {p['part_name']} | Cost: ₹{p['unit_cost_inr']:,} | Stock: {p['current_stock']} units"
         )
         existing_node_ids.add(node_key)
 
-    # 5. Add Edges with existence verification (ZERO CRASH ASSERTION)
     for _, r in sample_res.iterrows():
-        rid_int = int(r["resident_id"])
-        lid_int = int(r["location_id"])
-        src_key = f"R_{rid_int}"
-        dst_key = f"L_{lid_int}"
+        src_key = f"R_{int(r['resident_id'])}"
+        dst_key = f"L_{int(r['location_id'])}"
         if src_key in existing_node_ids and dst_key in existing_node_ids:
             net.add_edge(src_key, dst_key, title="LOCATED_IN", color="#555555", width=1.2)
 
     for _, ed in sample_e_dev.iterrows():
-        rid_int = int(ed["resident_id"])
-        did_int = int(ed["device_id"])
-        src_key = f"R_{rid_int}"
-        dst_key = f"D_{did_int}"
+        src_key = f"R_{int(ed['resident_id'])}"
+        dst_key = f"D_{int(ed['device_id'])}"
         if src_key in existing_node_ids and dst_key in existing_node_ids:
             net.add_edge(src_key, dst_key, title="OWNS", color="#888888", width=1.5)
 
     for _, ep in sample_e_parts.iterrows():
-        did_int = int(ep["device_id"])
-        pid_int = int(ep["part_id"])
-        src_key = f"D_{did_int}"
-        dst_key = f"P_{pid_int}"
+        src_key = f"D_{int(ep['device_id'])}"
+        dst_key = f"P_{int(ep['part_id'])}"
         if src_key in existing_node_ids and dst_key in existing_node_ids:
             net.add_edge(src_key, dst_key, title="REQUIRES_PART", color="#ffd166", width=1.2)
 
-    html_path = os.path.join(Config.ARTIFACT_DIR, "pyvis_sub_graph.html")
-    net.save_graph(html_path)
-    with open(html_path, "r", encoding="utf-8") as f:
-        components.html(f.read(), height=570)
+    try:
+        html_code = net.generate_html()
+        components.html(html_code, height=570)
+    except Exception:
+        html_path = os.path.join(Config.ARTIFACT_DIR, "pyvis_sub_graph.html")
+        net.save_graph(html_path)
+        with open(html_path, "r", encoding="utf-8") as f:
+            components.html(f.read(), height=570)
 
     col_g1, col_g2, col_g3, col_g4 = st.columns(4)
     col_g1.metric("Locations Rendered", len(sample_locs))
@@ -434,7 +409,7 @@ with tab_graph:
     col_g4.metric("Inventory Parts", len(sample_parts))
 
 # =============================================================
-# TAB 2: SPATIO-TEMPORAL DEMAND & CLIMATE REGIMES
+# TAB 2: SPATIO-TEMPORAL DEMAND
 # =============================================================
 with tab_demand:
     st.subheader("Spatio-Temporal Appliance & Servicing Demand (Months 1–12)")

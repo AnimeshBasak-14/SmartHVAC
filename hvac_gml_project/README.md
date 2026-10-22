@@ -111,3 +111,4 @@ hvac_gml_project/
 * **`run_pipeline.sh`**: Production Bash script for Linux V100 server execution.
 * **`run_pipeline.bat`**: Native batch script for Windows local execution.
 * **`tests/test_pipeline.py`**: Automated 5-point test suite verifying cyclical math, graph builder, forward pass, financial calculations, and Cypher query integrity.
+

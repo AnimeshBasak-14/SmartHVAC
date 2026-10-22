@@ -156,3 +156,4 @@ Default weights: $w_1 = 1.0, w_2 = 1.5, w_3 = 1.2, w_4 = 1.0$.
 The system includes a bi-directional Neo4j Bolt connector (`neo4j_connector.py`):
 * **Connection**: Communicates via Bolt protocol at `bolt://localhost:7687`.
 * **Zero-Crash Graceful Fallback**: If Neo4j is offline or unreachable, the system automatically detects the connection failure, logs a non-fatal warning, switches seamlessly to local PyG in-memory graph mode, and exports pre-formulated Cypher queries to `artifacts/training_telemetry.json` for manual or scheduled batch ingestion.
+

@@ -122,3 +122,4 @@ graph TD
 ### 4. Supply Chain & Spare-Parts Warehousing
 * **Where**: Regional Distribution Centers (RDCs) & Parts Warehouses.
 * **How GML Helps**: Component demand is tied to device failure risks. GML directly connects device stress to spare part nodes (`REQUIRES_PART`), forecasting exact replenishment needs to minimize holding costs while avoiding ₹85/unit stockout penalties.
+
