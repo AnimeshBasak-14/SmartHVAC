@@ -96,12 +96,10 @@ hvac_gml_project/
 * **Purpose**: Interactive Graphical Command Center built with Streamlit, Plotly, and PyVis.
 * **Key Tabs**:
   * **Tab 1: 🌐 Interactive Hetero-Graph**: Visualizes the graph topology using Barnes-Hut physics with guaranteed zero-crash node existence validation.
-  * **Tab 2: 📊 Spatio-Temporal Demand**: Metro vs. Village seasonal demand shifts across months $1 \dots 12$.
-  * **Tab 3: ⚡ Device Failure Telemetry**: Operating power vs. failure risk scatter plot and high-risk SKU alerts.
-  * **Tab 4: 👥 Sleeper Retention Engine**: Engagement distributions and link-predicted cross-sell campaigns.
-  * **Tab 5: 📦 Spare Parts Forecasting**: Stockout risk identification and replenishment schedules.
-  * **Tab 6: 💰 Executive Financial Ledger**: 12-month audited P&L statement, net profit margins, and reactive vs. proactive savings.
-  * **Tab 7: 🔍 Neo4j Cypher Workbench**: Copyable Cypher queries with schema diagrams.
+  * **Tab 2: ⚡ Device Failure Telemetry**: Operating power vs. failure risk scatter plot and high-risk SKU alerts.
+  * **Tab 3: 👥 Sleeper Retention Engine**: Engagement distributions and link-predicted cross-sell campaigns.
+  * **Tab 4: 📦 Spare Parts Forecasting**: Stockout risk identification and replenishment schedules.
+  * **Tab 5: 💰 Executive Financial Ledger**: 12-month audited P&L statement, net profit margins, and reactive vs. proactive savings.
   * **Company Business POV Panel**: Expandable real-time controllers to simulate changes in ticket prices, technician wages, and SLA penalties.
 
 ---

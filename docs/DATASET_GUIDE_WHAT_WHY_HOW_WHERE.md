@@ -36,7 +36,7 @@ Appliance SKUs spanning residential cooling and heating hardware.
 * `sku_name` *(str)*: Hardware SKU (e.g., `Cooling_HVAC_SKU_12`, `Heating_Induction_Kettle_SKU_145`).
 * `is_cooling_hvac` *(int)*: Binary hardware flag ($1$ = Cooling AC/HVAC, $0$ = Space Heater / Geyser / Kettle).
 * `category` *(str)*: Product family (`Cooling_HVAC` vs. `Heating_Induction_Kettle`).
-* `unit_price_inr` *(float)*: Retail price in INR (₹$1,800$ to ₹$58,000$).
+* `unit_price_inr` *(float)*: Retail price in INR (₹1,800 to ₹58,000).
 * `service_margin_inr` *(float)*: Standard technician margin per maintenance event (12% of unit price).
 * `rated_power_kw` *(float)*: Nominal nameplate power draw ($1.0 \dots 2.8\text{ kW}$).
 * `base_failure_risk` *(float)*: Inherent component hazard rate ($0.04 \dots 0.18$).
@@ -46,8 +46,8 @@ Mission-critical spare parts and consumables tracked across regional warehouses.
 * `part_id` *(int)*: Primary key ($0 \dots 49$).
 * `part_name` *(str)*: Part description (e.g., `Compressor_4`, `PCB_Board_12`, `Induction_IGBT_31`).
 * `for_cooling_hvac` *(int)*: Compatibility flag ($1$ = HVAC compressor/coil/filter, $0$ = Heating IGBT/element).
-* `unit_cost_inr` *(float)*: Replacement procurement cost in INR (₹$350$ to ₹$8,500$).
-* `holding_cost_monthly` *(float)*: Monthly warehouse storage and depreciation expense ($3\%$ of unit cost).
+* `unit_cost_inr` *(float)*: Replacement procurement cost in INR (₹350 to ₹8,500).
+* `holding_cost_monthly` *(float)*: Monthly warehouse storage and depreciation expense (3% of unit cost).
 * `current_stock` *(int)*: Current on-hand warehouse inventory ($15 \dots 120\text{ units}$).
 
 ### Table 4: `residents.csv` ($N = 600$)
@@ -99,10 +99,10 @@ flowchart TD
 ### Phase 1: Feature Scaling & Normalization
 To ensure zero gradient explosion and uniform feature magnitudes across diverse units:
 * **Temperatures**: Normalized by dividing by $45.0^\circ\text{C}$.
-* **Appliance Prices**: Normalized by dividing by ₹$60,000$.
-* **Service Margins**: Normalized by dividing by ₹$8,000$.
+* **Appliance Prices**: Normalized by dividing by ₹60,000.
+* **Service Margins**: Normalized by dividing by ₹8,000.
 * **Power Draw**: Normalized by dividing by $3.5\text{ kW}$.
-* **Part Costs**: Normalized by dividing by ₹$10,000$.
+* **Part Costs**: Normalized by dividing by ₹10,000.
 * **Customer Tenure**: Normalized by dividing by $48\text{ months}$.
 
 ### Phase 2: Dynamic Monthly Temporal Injection
@@ -187,9 +187,9 @@ graph TD
 * **RFM Feature Engineering**:
   * **Recency ($R$)**: Days since last transaction ($1 \dots 374\text{ days}$, mean: $91.17\text{ days}$).
   * **Frequency ($F$)**: Count of distinct purchase transactions ($1 \dots 205$, mean: $4.46$).
-  * **Monetary ($M$)**: Total spend in GBP (£$2.95 \dots £349,164.35$, mean: £$2,048.24$).
+  * **Monetary ($M$)**: Total spend in GBP (£2.95 to £349,164.35, mean: £2,048.24).
 * **Mapping to `residents.csv`**:
-  * **Sleeper Churn Ground Truth**: Customers with Recency $> 90\text{ days}$ during off-season months ($33.28\%$ of user base) establish ground-truth labels ($y_{\text{sleeper}}$).
+  * **Sleeper Churn Ground Truth**: Customers with Recency $> 90\text{ days}$ during off-season months (33.28% of user base) establish ground-truth labels ($y_{\text{sleeper}}$).
   * **Base App Engagement**: Inverse normalized Recency ($1.0 - \text{clip}(R/365, 0.05, 0.95)$).
   * **Income Tier & CLV**: Log-transformed monetary spend ($\log(1 + M) / \log(1 + M_{95})$) mapped to $[0.15, 1.0]$.
   * **App Active Indicator**: Customers with purchase Frequency $\ge 2$.

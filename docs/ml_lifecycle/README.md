@@ -38,10 +38,10 @@ flowchart TD
 ## 🎯 Fine-Tuning Status Summary
 
 * **Execution Status**: **100% Completed, Benchmarked, and Audited on Tesla V100 GPU.**
-* **Overall Dossier Loss**: Reduced by **$65.85\%$** ($137.04 \to 46.80$).
-* **Demand MSE**: Reduced by **$71.34\%$** ($115.61 \to 33.13$).
-* **Power MSE**: Reduced by **$92.18\%$** ($0.8364 \to 0.0654$).
-* **Failure F1 Score**: Increased from **$0.540 \to 0.697$** (432 high-risk units detected).
-* **Sleeper Churn F1 Score**: Increased from **$0.397 \to 0.646$** (240 false-positives eliminated).
-* **Annual Net Profit**: **₹2.27 Cr** (`₹2,27,01,359.44`) with a Cost-Efficiency Ratio of **7.764x mean / 7.676x aggregate** ($+22.64\%$ cost savings vs. reactive).
+* **Overall Dossier Loss**: Reduced by **65.85%** ($137.04 \to 46.80$).
+* **Demand MSE**: Reduced by **71.34%** ($115.61 \to 33.13$).
+* **Power MSE**: Reduced by **92.18%** ($0.8364 \to 0.0654$).
+* **Failure F1 Score**: Increased from **0.540 to 0.697** (432 high-risk units detected).
+* **Sleeper Churn F1 Score**: Increased from **0.397 to 0.646** (240 false-positives eliminated).
+* **Annual Net Profit**: **₹2.27 Cr** (`₹2,27,01,359.44`) with a Cost-Efficiency Ratio of **7.764x mean / 7.676x aggregate** (+22.64% cost savings vs. reactive).
 

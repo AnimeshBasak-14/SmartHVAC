@@ -52,7 +52,7 @@ graph TD
 * **Features**:
   * Client-side HTML5 + modern CSS3 design (dark-mode executive theme).
   * Built-in Chart.js visualizers: Monthly Revenue vs. OPEX curves, Metropolitan vs. Village demand shifts, V100 GPU loss decay, and multi-task component decay.
-  * **Before vs. After Fine-Tuning Audit Table**: Real comparative metrics displaying $-65.85\%$ Dossier Loss reduction, $-71.34\%$ Demand MSE, $-92.18\%$ Power MSE, and $+0.157$ Failure F1 gains.
+  * **Before vs. After Fine-Tuning Audit Table**: Real comparative metrics displaying -65.85% Dossier Loss reduction, -71.34% Demand MSE, -92.18% Power MSE, and +0.157 Failure F1 gains.
   * **1-Click Argos Summary Copy**: Copies formatted executive audit text directly to the system clipboard for immediate paste into evaluation portals.
   * **Zero Cloud Dependency**: Double-clickable in any browser (Chrome, Edge, Firefox, Safari) without requiring active internet, local servers, or Python environments.
 

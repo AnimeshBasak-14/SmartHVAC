@@ -26,7 +26,7 @@ flowchart LR
 | :--- | :--- |
 | **01. Problem Definition** | Multi-objective optimization for smart appliances: Spatio-temporal service dispatch, device failure prevention, customer churn prevention, and inventory stocking. |
 | **02. Data Collection** | `data_pipeline.py`: Ingestion of multi-entity relational CSV tables (`locations`, `devices`, `parts`, `residents`) or deterministic synthesis if CSVs are missing. |
-| **03. Data Cleaning & Preprocessing** | Feature normalization (scaling unit prices by $60,000$, power by $3.5\text{ kW}$, temperatures by $45^\circ\text{C}$), null handling, and type-safe integer node indexing. |
+| **03. Data Cleaning & Preprocessing** | Feature normalization (scaling unit prices by 60,000, power by $3.5\text{ kW}$, temperatures by $45^\circ\text{C}$), null handling, and type-safe integer node indexing. |
 | **04. Exploratory Data Analysis (EDA)** | `dashboard_app.py` (Tabs 2 & 3): Scatter correlations between temperature vs. grid stability, power draw vs. failure probability, and customer app engagement histograms. |
 | **05. Feature Engineering & Selection** | `encode_month_features()`: Cyclical temporal transformation ($\sin/\cos$) of calendar month ($1 \dots 12$) combined with India seasonal climate regime multipliers (`cool_mult`, `heat_mult`). |
 | **06. Model Selection** | `hetero_gnn_model.py`: Multi-relational `HeteroConv` with GraphSAGE (`SAGEConv`) message passing + multi-task regression/classification heads + dot-product link prediction. |
@@ -165,7 +165,7 @@ The system includes a bi-directional Neo4j Bolt connector (`neo4j_connector.py`)
 An audit of initial pre-training (`best_hetero_gnn_v100.pt`) revealed three critical operational bottlenecks:
 1. **Multi-Task Gradient Dominance**: Unweighted regression MSE for Demand ($\sim 115 - 150$) and Inventory ($\sim 20 - 75$) overpowered binary cross-entropy gradients for Churn ($\sim 0.50$) and Failure ($\sim 0.70$).
 2. **Under-Calibration in Non-Peak/Monsoon Months**: Seven out of twelve calendar months reported 0 high-risk equipment failures, failing to model monsoon humidity corrosion and voltage surges.
-3. **Late-Epoch Oscillation**: Fixed learning rates caused loss oscillations between Epoch 40 ($253.39$) and Epoch 120 ($310.93$), accompanied by over-flagged false positive churners ($518 / 600$).
+3. **Late-Epoch Oscillation**: Fixed learning rates caused loss oscillations between Epoch 40 (253.39) and Epoch 120 (310.93), accompanied by over-flagged false positive churners (518 / 600).
 
 ### Empirical Dataset Integration for Calibration
 The fine-tuning pipeline (`hvac_gml_project/fine_tune_v100.py`) integrates three canonical real-world benchmark datasets:

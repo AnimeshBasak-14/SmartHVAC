@@ -281,14 +281,12 @@ st.markdown("---")
 # -------------------------------------------------------------
 # TABBED INTERACTIVE SECTIONS
 # -------------------------------------------------------------
-tab_graph, tab_demand, tab_devices, tab_churn, tab_parts, tab_fin, tab_neo4j = st.tabs([
+tab_graph, tab_devices, tab_churn, tab_parts, tab_fin = st.tabs([
     "🌐 Interactive Hetero-Graph",
-    "📊 Spatio-Temporal Demand",
     "⚡ Device Failure Telemetry",
     "👥 Sleeper Retention Engine",
     "📦 Spare Parts Forecasting",
-    "💰 Executive Financial Ledger",
-    "🔍 Neo4j Cypher Workbench"
+    "💰 Executive Financial Ledger"
 ])
 
 # =============================================================
@@ -416,52 +414,7 @@ with tab_graph:
     col_g4.metric("Inventory Parts", len(sample_parts))
 
 # =============================================================
-# TAB 2: SPATIO-TEMPORAL DEMAND
-# =============================================================
-with tab_demand:
-    st.subheader("Spatio-Temporal Appliance & Servicing Demand (Months 1–12)")
-    st.caption("Model 1 Output: Shows seasonal shift between Metropolitan (Summer Cooling peak) vs. Village (Winter Heating peak).")
-
-    fig_dem = go.Figure()
-    fig_dem.add_trace(go.Scatter(
-        x=df_fin["month"], y=df_fin["metro_demand_units"],
-        name="Metropolitan Demand (Cooling Surge)",
-        mode="lines+markers", line=dict(color="#00f5d4", width=3.5)
-    ))
-    fig_dem.add_trace(go.Scatter(
-        x=df_fin["month"], y=df_fin["village_demand_units"],
-        name="Village Hub Demand (Winter Heating / Kettle Peak)",
-        mode="lines+markers", line=dict(color="#fee440", width=3.5)
-    ))
-    fig_dem.add_vline(x=selected_month, line_width=2, line_dash="dash", line_color="#ff4b4b")
-    fig_dem.update_layout(
-        template="plotly_dark", height=380,
-        xaxis=dict(title="Month (1 to 12)", tickmode="linear", tick0=1, dtick=1),
-        yaxis=dict(title="Servicing Demand (Units)"),
-        margin=dict(l=30, r=30, t=30, b=30)
-    )
-    st.plotly_chart(fig_dem, use_container_width=True)
-
-    col_d1, col_d2 = st.columns(2)
-    with col_d1:
-        st.markdown("#### Climate Regime Multipliers")
-        regime_df = pd.DataFrame([
-            {"Month": m, "Season": Config.MONTH_REGIME[m][0], "Cooling Mult": Config.MONTH_REGIME[m][2], "Heating Mult": Config.MONTH_REGIME[m][3]}
-            for m in range(1, 13)
-        ])
-        st.dataframe(regime_df, height=220, use_container_width=True)
-    with col_d2:
-        st.markdown("#### Location Micro-Climate & Grid Stability")
-        fig_loc_scatter = px.scatter(
-            df_loc, x="base_temp_c", y="grid_stability", color="location_type",
-            size="population_density", hover_name="name", template="plotly_dark",
-            labels={"base_temp_c": "Base Temperature (°C)", "grid_stability": "Grid Reliability Score"}
-        )
-        fig_loc_scatter.update_layout(height=260, margin=dict(l=10, r=10, t=20, b=10))
-        st.plotly_chart(fig_loc_scatter, use_container_width=True)
-
-# =============================================================
-# TAB 3: DEVICE TELEMETRY & FAILURE PREDICTION
+# TAB 2: DEVICE TELEMETRY & FAILURE PREDICTION
 # =============================================================
 with tab_devices:
     st.subheader("Device Health, Power Draw & Failure Telemetry")
@@ -606,20 +559,6 @@ with tab_fin:
         ]],
         use_container_width=True, height=280
     )
-
-# =============================================================
-# TAB 7: NEO4J CYPHER WORKBENCH
-# =============================================================
-with tab_neo4j:
-    st.subheader("Neo4j Bolt Graph Database Integration & Cypher Queries")
-    st.markdown("""
-    Copy and paste these pre-formulated Cypher queries directly into **Neo4j Browser** or **Neo4j Bloom** to visualize the multi-relational graphs:
-    """)
-
-    queries = Neo4jGraphManager.get_cypher_visualization_queries()
-    for q_name, q_cypher in queries.items():
-        st.markdown(f"**Query: `{q_name}`**")
-        st.code(q_cypher, language="cypher")
 
 st.markdown("---")
 st.caption("HVAC & Smart Appliance Heterogeneous GML Command Center | Built for NVIDIA Tesla V100 GPU + Neo4j Lab Server")

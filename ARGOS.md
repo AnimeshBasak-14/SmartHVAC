@@ -64,11 +64,11 @@ Mean Cost-Efficiency Ratio          | 7.92x              | 7.76x (agg: 7.68x) | 
 ### Bottleneck 1: Multi-Task Gradient Dominance
 * **Root Cause**: Demand MSE ($\sim 115$) and Inventory MSE ($\sim 20$) overwhelmed binary cross-entropy losses for Churn ($\sim 0.50$) and Failure ($\sim 0.70$).
 * **Resolution**: Implemented **Kendall Homoscedastic Uncertainty Weighting** (CVPR 2018) with 4 learnable parameters $\sigma_i$, coupled with **SmoothL1 (Huber) Loss** ($\beta = 4.0$).
-* **Outcome**: Demand MSE dropped by $-71.34\%$ while classification heads achieved their highest F1 scores to date.
+* **Outcome**: Demand MSE dropped by -71.34% while classification heads achieved their highest F1 scores to date.
 
 ### Bottleneck 2: Under-Calibration in Non-Peak/Monsoon Regimes
 * **Root Cause**: The uncalibrated baseline flagged 0 high-risk equipment units during Months 02, 03, 07, 08, 09, 10, and 11, missing monsoon PCB corrosion and surge failures.
-* **Resolution**: Ingested **UCI AI4I 2020** Heat Dissipation Failure (`HDF`) and Power Failure (`PWF`) fault rates ($2.07\%$), applied class-balanced positive weighting (`pos_weight = 2.5`), and calibrated ambient-power curves via **Kaggle HVAC Power (`felixpradoh`)**.
+* **Resolution**: Ingested **UCI AI4I 2020** Heat Dissipation Failure (`HDF`) and Power Failure (`PWF`) fault rates (2.07%), applied class-balanced positive weighting (`pos_weight = 2.5`), and calibrated ambient-power curves via **Kaggle HVAC Power (`felixpradoh`)**.
 * **Outcome**: High-risk units flagged rose from 154 to 432 units, eliminating under-reporting across monsoon and shoulder months.
 
 ### Bottleneck 3: False-Positive Churn & Late-Epoch Oscillation

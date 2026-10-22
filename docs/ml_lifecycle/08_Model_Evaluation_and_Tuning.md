@@ -78,10 +78,10 @@ Mean Cost-Efficiency Ratio          | 7.92x              | 7.76x (agg: 7.68x) | 
 ```
 
 ### Key Takeaways:
-1. **Dossier Loss fell by $65.85\%$** from $137.04 \to 46.80$.
-2. **Pillar 1 Demand MSE dropped by $71.34\%$** from $115.61 \to 33.13$ (MAE fell from $8.77 \to 4.64$).
-3. **Pillar 2 Power MSE dropped by $92.18\%$** from $0.8364 \to 0.0654$.
-4. **Pillar 2 Equipment Failure F1 increased from $0.540 \to 0.697$**, detecting **432 critical failure risks** across the year and completely resolving the non-peak under-reporting.
-5. **Pillar 3 Sleeper Churn F1 increased from $0.397 \to 0.646$**, eliminating 240 false-positive churn flags (278 flagged, 276 converted reactivations).
-6. **Financial Performance**: Annual Net Profit reached **₹2.27 Cr** (`₹2,27,01,359.44`) with a Cost-Efficiency Ratio of **7.764x mean / 7.676x aggregate** and a **$+22.64\%$ cost savings (peak $+28.4\%$)** over reactive maintenance.
+1. **Dossier Loss fell by 65.85%** from $137.04 \to 46.80$.
+2. **Pillar 1 Demand MSE dropped by 71.34%** from $115.61 \to 33.13$ (MAE fell from $8.77 \to 4.64$).
+3. **Pillar 2 Power MSE dropped by 92.18%** from $0.8364 \to 0.0654$.
+4. **Pillar 2 Equipment Failure F1 increased from 0.540 to 0.697**, detecting **432 critical failure risks** across the year and completely resolving the non-peak under-reporting.
+5. **Pillar 3 Sleeper Churn F1 increased from 0.397 to 0.646**, eliminating 240 false-positive churn flags (278 flagged, 276 converted reactivations).
+6. **Financial Performance**: Annual Net Profit reached **₹2.27 Cr** (`₹2,27,01,359.44`) with a Cost-Efficiency Ratio of **7.764x mean / 7.676x aggregate** and **+22.64% cost savings (peak +28.4%)** over reactive maintenance.
 
