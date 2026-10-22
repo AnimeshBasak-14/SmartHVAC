@@ -166,3 +166,4 @@ fig3_path = 'docs/New folder/figures/fig4_12month_financial_ledger.png'
 plt.savefig(fig3_path, dpi=300)
 plt.close()
 print(f'Saved {fig3_path}')
+
