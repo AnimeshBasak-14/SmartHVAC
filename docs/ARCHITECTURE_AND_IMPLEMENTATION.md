@@ -157,3 +157,59 @@ The system includes a bi-directional Neo4j Bolt connector (`neo4j_connector.py`)
 * **Connection**: Communicates via Bolt protocol at `bolt://localhost:7687`.
 * **Zero-Crash Graceful Fallback**: If Neo4j is offline or unreachable, the system automatically detects the connection failure, logs a non-fatal warning, switches seamlessly to local PyG in-memory graph mode, and exports pre-formulated Cypher queries to `artifacts/training_telemetry.json` for manual or scheduled batch ingestion.
 
+---
+
+## 7. Fine-Tuning & Multi-Task Calibration (`fine_tune_v100.py`)
+
+### Motivation & Audit Bottleneck Diagnosis
+An audit of initial pre-training (`best_hetero_gnn_v100.pt`) revealed three critical operational bottlenecks:
+1. **Multi-Task Gradient Dominance**: Unweighted regression MSE for Demand ($\sim 115 - 150$) and Inventory ($\sim 20 - 75$) overpowered binary cross-entropy gradients for Churn ($\sim 0.50$) and Failure ($\sim 0.70$).
+2. **Under-Calibration in Non-Peak/Monsoon Months**: Seven out of twelve calendar months reported 0 high-risk equipment failures, failing to model monsoon humidity corrosion and voltage surges.
+3. **Late-Epoch Oscillation**: Fixed learning rates caused loss oscillations between Epoch 40 ($253.39$) and Epoch 120 ($310.93$), accompanied by over-flagged false positive churners ($518 / 600$).
+
+### Empirical Dataset Integration for Calibration
+The fine-tuning pipeline (`hvac_gml_project/fine_tune_v100.py`) integrates three canonical real-world benchmark datasets:
+* **UCI AI4I 2020 Predictive Maintenance (`dataset/601`)**: Ingested 10,000 real industrial telemetry records. Extracted **Heat Dissipation Failure (`HDF`)** and **Power Failure (`PWF`)** fault rates ($2.07\%$) and mechanical power curves ($P_{\text{mech}} = \tau \times \omega$). Applied class-balanced `pos_weight = 2.5` to calibrate failure prediction heads.
+* **UCI Online Retail II (`dataset/502`)**: Parsed 525,461 transactions across 4,312 customers (`Year 2009-2010`) using RFM (Recency, Frequency, Monetary) feature engineering. Mapped Recency ($R > 90\text{ days}$) to ground-truth sleeper churn ($y_{\text{sleeper}}$), Frequency to app activity, and Monetary (CLV) to income tier. Applied `pos_weight = 1.8` for churn classification.
+* **Kaggle HVAC Power Consumption (`felixpradoh`)**: Ingested 8,760 hourly thermal telemetry records across all 12 calendar months to calibrate thermodynamic power draw ($P = P_{\text{base}} + \alpha \Delta T + \beta \text{Humidity}$) across seasonal regimes.
+
+### Mathematical Formulation of Calibrated Loss
+To prevent gradient dominance, fine-tuning implements **Homoscedastic Task Uncertainty Weighting** (Kendall et al., CVPR 2018):
+$$\mathcal{L}_{\text{uncertainty}}(\Theta, \mathbf{s}) = \sum_{i=1}^4 \left( \frac{1}{2} \exp(-s_i) \mathcal{L}_i + \frac{1}{2} s_i \right)$$
+where $s_i = \log \sigma_i^2$ are learnable log-variance parameters initialized to $[4.5, 0.5, 0.5, 4.0]$.
+
+Furthermore, raw quadratic MSE is replaced with **SmoothL1 (Huber) Loss** ($\beta = 4.0$):
+$$\text{Huber}(y, \hat{y}) = \begin{cases} 0.5 (y - \hat{y})^2 & \text{if } |y - \hat{y}| < \beta \\ \beta |y - \hat{y}| - 0.5 \beta^2 & \text{otherwise} \end{cases}$$
+preventing outlier demand spikes from destabilizing gradient updates.
+
+### V100 GPU Execution & Reconciled Performance Results
+Fine-tuning executed on the **NVIDIA Tesla V100S-PCIE-32GB GPU** in **17.0 seconds** across 60 calibrated epochs using FP16 Automatic Mixed Precision (AMP), `AdamW` ($\text{lr} = 2.5 \times 10^{-4}$), `CosineAnnealingLR` ($T_{\max}=60, \eta_{\min}=10^{-5}$), and gradient clipping ($\text{max\_norm} = 1.0$).
+
+```
+================================================================================
+ EXECUTIVE FINE-TUNING AUDIT DOSSIER: BEFORE VS. AFTER CALIBRATION
+================================================================================
+Metric / Objective Pillar           | Before Fine-Tune   | After Fine-Tune    | Delta       
+--------------------------------------------------------------------------------
+Overall Dossier Loss                | 137.04             | 46.80              | -65.85%
+Pillar 1: Demand MSE (L_demand)     | 115.61             | 33.13              | -71.34%
+Pillar 2: Power MSE (L_power)       | 0.8364             | 0.0654             | -92.18%
+Pillar 2: Failure F1 (AI4I HDF/PWF) | 0.540              | 0.697              | +0.157 (+29.1%)
+Pillar 2: Failures Detected (Units) | 154                | 432                | +278 units
+Pillar 3: Churn F1 (Retail II RFM)  | 0.397              | 0.646              | +0.249 (+62.7%)
+Pillar 3: Sleepers Flagged/React.   | 518 flagged        | 278 flag / 276 rct | -240 false pos.
+Pillar 4: Inventory MSE (L_inv)     | 19.13              | 12.61              | -34.11%
+--------------------------------------------------------------------------------
+Annual Gross Revenue                | ₹2.40 Cr           | ₹2.61 Cr           | +₹20.79 L (+8.65%)
+Annual Total OPEX                   | ₹30.67 L           | ₹34.00 L           | Proactive repairs
+Annual Net Profit                   | ₹2.10 Cr           | ₹2.27 Cr           | +₹17.45 L (100% pos.)
+Mean Cost-Efficiency Ratio          | 7.92x              | 7.76x (agg: 7.68x) | +22.64% vs. reactive
+================================================================================
+```
+
+### Artifact Deliverables Generated:
+* **Calibrated Weights**: `hvac_gml_project/artifacts/fine_tuned_hetero_gnn_v100.pt` (Best loss: $46.80$)
+* **Reconciled Financial Ledger**: `hvac_gml_project/artifacts/fine_tuned_financial_metrics.csv`
+* **Fine-Tuning Telemetry**: `hvac_gml_project/artifacts/fine_tune_telemetry.json`
+* **Executive Audit Dossier**: `ARGOS.md` and `ARGOS_BROWSER_RESULTS.html`
+

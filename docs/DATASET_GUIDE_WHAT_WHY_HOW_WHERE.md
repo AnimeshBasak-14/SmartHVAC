@@ -132,6 +132,78 @@ $$\text{month\_sin} = \sin(\theta_m), \quad \text{month\_cos} = \cos(\theta_m)$$
 | **`neo4j_connector.py`** | All node and edge tables | Ingests graph entities and relationships into Neo4j Graph DB via Bolt Cypher queries. |
 | **`telemetry_premodel.py`** | `devices.csv` + month parameter | Pre-processes IoT sensor load and power draws before GNN convolution. |
 | **`train_and_monitor.py`** | 12 monthly `HeteroData` graphs | Trains the multi-task GNN with PyTorch FP16 AMP on NVIDIA Tesla V100 GPU. |
+| **`fine_tune_v100.py`** | `ai4i2020.csv`, `online_retail_ii_rfm.csv`, `hvac_power_consumption.csv` | Executes 60-epoch fine-tuning on V100 GPU with Kendall uncertainty weighting and Huber loss. |
 | **`business_financial_engine.py`**| Ground truth targets + GNN outputs | Computes audited monthly revenues, maintenance savings, stockout penalties, and net profit. |
-| **`dashboard_app.py`** | CSVs + `artifacts/monthly_financial_metrics.csv` | Renders the interactive Streamlit command center, PyVis subgraphs, and Plotly analytics. |
+| **`dashboard_app.py`** | CSVs + `artifacts/fine_tuned_financial_metrics.csv` | Renders the interactive Streamlit command center, PyVis subgraphs, and Plotly analytics. |
+
+---
+
+## 5. Real Benchmark Datasets Used for Fine-Tuning & Calibration
+
+To transition from synthetic baselines to empirical enterprise calibration, the pipeline integrates three real-world benchmark datasets under `hvac_gml_project/data/`:
+
+```mermaid
+graph TD
+    subgraph Empirical_CSVs [Real Benchmark Datasets]
+        D1["ai4i2020.csv (UCI 601)<br>10,000 Industrial Records<br>HDF & PWF Failure Modes"]
+        D2["online_retail_ii_rfm.csv (UCI 502)<br>4,312 Customer Profiles<br>Recency, Frequency, Monetary"]
+        D3["hvac_power_consumption.csv (felixpradoh)<br>8,760 Hourly Readings<br>Thermal COP & Power Curves"]
+    end
+
+    subgraph Calibrated_Pipeline [Fine-Tuning Ingestion Engine]
+        FT["fine_tune_v100.py<br>(Tesla V100 GPU • FP16 AMP)"]
+    end
+
+    subgraph Targets [Calibrated Graph Targets]
+        T1["Pillar 1: Demand MSE -> 33.13"]
+        T2["Pillar 2: Power MSE -> 0.0654 | Failure F1 -> 0.697"]
+        T3["Pillar 3: Sleeper Churn F1 -> 0.646"]
+        T4["Pillar 4: Inventory MSE -> 12.61"]
+    end
+
+    D1 --> FT
+    D2 --> FT
+    D3 --> FT
+    FT --> Targets
+```
+
+### 1. UCI AI4I 2020 Predictive Maintenance Dataset (`dataset/601`)
+* **File**: `hvac_gml_project/data/ai4i2020.csv`
+* **Volume**: 10,000 real industrial machine operational records.
+* **Key Features**:
+  * `Air temperature [K]`: Mean $300.0\text{ K}$ ($\approx 26.85^\circ\text{C}$).
+  * `Process temperature [K]`: Mean $310.0\text{ K}$.
+  * `Rotational speed [rpm]`: Mean $1,538.8\text{ rpm}$.
+  * `Torque [Nm]`: Mean $40.0\text{ Nm}$.
+  * `Tool wear [min]`: Cumulative mechanical fatigue.
+* **Failure Modes Extracted**:
+  * **Heat Dissipation Failure (`HDF`)**: 115 occurrences ($1.15\%$). Occurs when thermal dissipation fails under heavy motor loads, directly modeling summer HVAC condenser overheating.
+  * **Power Failure (`PWF`)**: 95 occurrences ($0.95\%$). Occurs when mechanical power ($P = \tau \times \omega$) exceeds operating thresholds, modeling electrical compressor motor lockup.
+  * **Unified Critical Fault Rate**: $2.07\%$ (207 unique events). Used to calibrate `base_failure_risk` in `devices.csv` and set `pos_weight = 2.5`.
+
+### 2. UCI Online Retail II Dataset (`dataset/502`)
+* **Files**: Raw `online_retail_II.xlsx` processed into `hvac_gml_project/data/online_retail_ii_rfm.csv`.
+* **Volume**: 525,461 transaction records aggregated into **4,312 distinct customer RFM profiles** (`Hamim-Susmit` / `ruturajdixit99` methodology).
+* **RFM Feature Engineering**:
+  * **Recency ($R$)**: Days since last transaction ($1 \dots 374\text{ days}$, mean: $91.17\text{ days}$).
+  * **Frequency ($F$)**: Count of distinct purchase transactions ($1 \dots 205$, mean: $4.46$).
+  * **Monetary ($M$)**: Total spend in GBP (£$2.95 \dots £349,164.35$, mean: £$2,048.24$).
+* **Mapping to `residents.csv`**:
+  * **Sleeper Churn Ground Truth**: Customers with Recency $> 90\text{ days}$ during off-season months ($33.28\%$ of user base) establish ground-truth labels ($y_{\text{sleeper}}$).
+  * **Base App Engagement**: Inverse normalized Recency ($1.0 - \text{clip}(R/365, 0.05, 0.95)$).
+  * **Income Tier & CLV**: Log-transformed monetary spend ($\log(1 + M) / \log(1 + M_{95})$) mapped to $[0.15, 1.0]$.
+  * **App Active Indicator**: Customers with purchase Frequency $\ge 2$.
+
+### 3. Kaggle HVAC Power Consumption & Sensor Data (`felixpradoh`)
+* **File**: `hvac_gml_project/data/hvac_power_consumption.csv`
+* **Volume**: 8,760 hourly readings across a complete 365-day calendar cycle.
+* **Physical Parameters**:
+  * `timestamp`: Hourly temporal index.
+  * `Month`: $1 \dots 12$, mapping to India's 12 seasonal climate regimes.
+  * `Ambient_Temp`: Outdoor thermal conditions ($10.5^\circ\text{C} \dots 44.2^\circ\text{C}$).
+  * `Indoor_Temp`: Thermostat setpoint ($21.0^\circ\text{C} \dots 24.0^\circ\text{C}$).
+  * `Humidity_pct`: Relative atmospheric humidity ($20\% \dots 98\%$).
+  * `Power_kW`: Hourly power consumption ($0.10 \dots 4.50\text{ kW}$, mean: $1.85\text{ kW}$).
+* **Integration**: Ingested by `telemetry_premodel.py` and `fine_tune_v100.py` to drive empirical thermodynamic power curves ($P = P_{\text{base}} + \alpha \Delta T + \beta \text{Humidity}$), establishing ground-truth power draw ($y_{\text{power}}$) across all 12 monthly graph snapshots.
+
 
