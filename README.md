@@ -49,11 +49,11 @@ The project implements the complete 10-stage Machine Learning Lifecycle, detaile
 
 Calibrated across all 12 calendar months on the Tesla V100 GPU, the pipeline demonstrates strictly positive net profit and dramatic operational savings:
 
-* **Annual Gross Revenue**: **₹2,60,71,851.84** (~₹2.61 Crore INR)
-* **Annual Operating Expenditure (OPEX)**: **₹34,00,492.40** (~₹34.00 Lakh INR)
-* **Annual Net Profit**: **₹2,26,71,359.43** (~₹2.27 Crore INR — 100% positive in every month)
-* **Mean Cost-Efficiency Ratio**: **7.821x** (Revenue generates ~7.8x operating expenditure)
-* **Proactive Breakdown Savings Gain**: **+24.23%** (Avoidance of emergency off-season breakdowns)
+* **Annual Gross Revenue**: **₹2,61,01,851.84** (~₹2.61 Crore INR)
+* **Annual Operating Expenditure (OPEX)**: **₹34,00,492.40** (~₹34.00 Lakh INR — 100% Match)
+* **Annual Net Profit**: **₹2,27,01,359.44** (~₹2.27 Crore INR — 100% positive in every month)
+* **Mean Cost-Efficiency Ratio**: **7.764x mean / 7.676x aggregate** (Revenue generates ~7.7x operating cost)
+* **Proactive Breakdown Savings Gain**: **+22.64% avg (Peak: +28.4%)** (Avoidance of emergency breakdowns)
 * **Full Audit Dossier**: See **[ARGOS.md](ARGOS.md)** and **[ARGOS_BROWSER_RESULTS.html](ARGOS_BROWSER_RESULTS.html)**.
 
 ---

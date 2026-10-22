@@ -73,3 +73,4 @@ Because HVAC demand and appliance failures are inherently coupled to meteorologi
 ### Graph Schema Evolution Without Breaking Contracts:
 * **Adding New SKUs / Appliances**: New devices (e.g., commercial heat pumps, rooftop solar inverters) can be appended to `devices.csv` with their corresponding 8-dim feature vectors and linked to existing `resident` and `part` nodes without altering the GNN architecture.
 * **Adding Geographic Hubs**: New cities or rural districts are appended to `locations.csv`. The inductive nature of `SAGEConv` allows immediate zero-shot inference on new location subgraphs without requiring retraining from scratch.
+

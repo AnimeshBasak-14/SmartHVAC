@@ -83,3 +83,4 @@ This guarantees that:
    $$\hat{y}_{\text{inventory}} = \text{ReLU}(\mathbf{w}_{\text{inv}}^T \mathbf{h}_{\text{part}} + b_{\text{inv}})$$
 5. **Cross-Sell Link Predictor (`decode_cross_sell_link`)**:
    $$\hat{s}_{i, j} = \sigma \left( \langle \mathbf{h}_{\text{res}, i}, \mathbf{h}_{\text{dev}, j} \rangle \right)$$
+

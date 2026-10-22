@@ -40,14 +40,15 @@
     "sleeper_f1_gain": 0.2494
   },
   "financial_summary": {
-    "annual_revenue_inr": 26071851.84,
-    "annual_revenue_cr": 2.607,
+    "annual_revenue_inr": 26101851.84,
+    "annual_revenue_cr": 2.61,
     "annual_expenditure_inr": 3400492.4,
     "annual_expenditure_cr": 0.34,
-    "annual_net_profit_inr": 22671359.43,
-    "annual_net_profit_cr": 2.267,
-    "mean_cost_efficiency_ratio": 7.821,
-    "mean_cost_efficiency_gain_pct": 24.23
+    "annual_net_profit_inr": 22701359.44,
+    "annual_net_profit_cr": 2.27,
+    "mean_cost_efficiency_ratio": 7.764,
+    "aggregate_cost_efficiency_ratio": 7.676,
+    "mean_cost_efficiency_gain_pct": 22.64
   },
   "training_history": [
     {

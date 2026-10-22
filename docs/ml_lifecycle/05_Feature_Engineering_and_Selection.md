@@ -96,3 +96,4 @@ Message passing flows across six canonical relations:
 4. `('device', 'owned_by', 'resident')` $\in \mathbb{R}^{2 \times |\mathcal{E}_2|}$
 5. `('device', 'requires_part', 'part')` $\in \mathbb{R}^{2 \times |\mathcal{E}_3|}$
 6. `('part', 'used_in', 'device')` $\in \mathbb{R}^{2 \times |\mathcal{E}_3|}$
+

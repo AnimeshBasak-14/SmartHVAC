@@ -92,3 +92,4 @@ To support graph-native operations and Cypher visual traversal, all collected ta
 * `edge_dev_part.csv`: Device bill-of-materials component dependency edges.
 
 Optionally, data is synchronized to **Neo4j** over the Bolt binary protocol (`bolt://10.13.1.7:7687`), enabling real-time Cypher topological queries.
+

@@ -16,11 +16,11 @@ This dossier presents the verified and audited results of the Heterogeneous Grap
 
 | Metric | Post-Fine-Tune Calibrated | Pre-Fine-Tune Baseline | Net Impact / Variance |
 | :--- | :---: | :---: | :---: |
-| **Gross Operating Revenue** | **₹2,60,71,851.84** (~₹2.61 Cr) | ₹2,40,22,953.31 (~₹2.40 Cr) | **+₹20,48,898.53 (+8.5%)** via targeted sleeper reactivation |
-| **Operating Expenditure (OPEX)**| **₹34,00,492.40** (~₹34.00 L) | ₹30,67,011.73 (~₹30.67 L) | High-risk failure interventions scheduled proactively |
-| **Net Operating Profit** | **₹2,26,71,359.43** (~₹2.27 Cr) | ₹2,09,55,941.61 (~₹2.10 Cr) | **+₹17,15,417.82 (+8.2% margin gain)** |
-| **Cost-Efficiency Ratio (Rev/OPEX)**| **7.821x** | 7.924x | **₹7.82 generated for every ₹1.00 spent** |
-| **Proactive Savings vs. Reactive** | **+24.23% avg** | +9.80% avg | Catastrophic emergency breakdown avoidance |
+| **Gross Operating Revenue** | **₹2,61,01,851.84** (~₹2.61 Cr) | ₹2,40,22,953.31 (~₹2.40 Cr) | **+₹20,78,898.53 (+8.65%)** via targeted sleeper reactivation |
+| **Operating Expenditure (OPEX)**| **₹34,00,492.40** (~₹34.00 L) | ₹30,67,011.73 (~₹30.67 L) | High-risk failure interventions scheduled proactively (432 units) |
+| **Net Operating Profit** | **₹2,27,01,359.44** (~₹2.27 Cr) | ₹2,09,55,941.61 (~₹2.10 Cr) | **+₹17,45,417.83 (+8.33% net profit gain)** |
+| **Cost-Efficiency Ratio (Rev/OPEX)**| **7.764x (mean) / 7.676x (agg)** | 7.924x (mean) / 7.833x (agg) | **₹7.68–₹7.76 generated for every ₹1.00 spent** |
+| **Proactive Savings vs. Reactive** | **+22.64% avg (Peak: +28.4%)** | +9.80% avg (Peak: +20.39%) | Catastrophic emergency breakdown avoidance across all 12 months |
 | **Profitability Consistency** | **100% Positive (12 / 12 Months)** | 100% Positive (12 / 12 Months) | Zero monthly deficits across entire calendar cycle |
 
 ---
@@ -47,13 +47,13 @@ Pillar 2: Power MSE (L_power)       | 0.8364             | 0.0654             | 
 Pillar 2: Failure F1 (AI4I HDF/PWF) | 0.540              | 0.697              | +0.157 (+29.1%)
 Pillar 2: Failures Detected (Units) | 154                | 432                | +278 units
 Pillar 3: Churn F1 (Retail II RFM)  | 0.397              | 0.646              | +0.249 (+62.7%)
-Pillar 3: Sleepers Flagged (Units)  | 518                | 278                | -240 false pos.
+Pillar 3: Sleepers Flagged/React.   | 518 flagged        | 278 flag / 276 rct | -240 false pos.
 Pillar 4: Inventory MSE (L_inv)     | 19.13              | 12.61              | -34.11%
 --------------------------------------------------------------------------------
-Annual Gross Revenue                | ₹2.40 Cr           | ₹2.61 Cr           | +₹20.48 L
+Annual Gross Revenue                | ₹2.40 Cr           | ₹2.61 Cr           | +₹20.79 L (+8.65%)
 Annual Total OPEX                   | ₹30.67 L           | ₹34.00 L           | Proactive repairs
-Annual Net Profit                   | ₹2.10 Cr           | ₹2.27 Cr           | +₹17.15 L (100% positive)
-Mean Cost-Efficiency Ratio          | 7.92x              | 7.82x              | +24.23% vs. reactive
+Annual Net Profit                   | ₹2.10 Cr           | ₹2.27 Cr           | +₹17.45 L (100% pos.)
+Mean Cost-Efficiency Ratio          | 7.92x              | 7.76x (agg: 7.68x) | +22.64% vs. reactive
 ================================================================================
 ```
 
@@ -145,3 +145,4 @@ All 12 calendar snapshots demonstrate robust positive Net Operating Profit:
 * **Telemetry JSON**: [`hvac_gml_project/artifacts/fine_tune_telemetry.json`](./hvac_gml_project/artifacts/fine_tune_telemetry.json)
 * **Interactive Streamlit Command Center**: Run via `py -3.11 -m streamlit run app.py`
 * **GitHub Repository**: [`https://github.com/AnimeshBasak-14/SmartHVAC.git`](https://github.com/AnimeshBasak-14/SmartHVAC.git)
+

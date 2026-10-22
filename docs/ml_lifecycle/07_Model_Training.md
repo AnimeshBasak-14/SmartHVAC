@@ -73,3 +73,4 @@ During initial pre-training (`train_and_monitor.py`), the model converged from a
 To guarantee that training unattended never crashes due to numerical instability:
 1. The training harness monitors `avg_loss` at each epoch.
 2. If `isnan(loss)` or `isinf(loss)` occurs, or if loss spikes by $> 10\text{x}$, the loop catches the condition, reduces the learning rate by $50\%$ ($\text{lr} \leftarrow \text{lr} \times 0.5$), resets model parameters to the last checkpoint, and automatically restarts.
+

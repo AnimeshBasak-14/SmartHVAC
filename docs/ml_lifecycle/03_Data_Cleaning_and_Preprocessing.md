@@ -74,3 +74,4 @@ In Heterogeneous PyTorch Geometric graphs, missing or disconnected nodes cause d
 1. **Zero Orphan Nodes**: Every `resident` must be assigned to at least one `location` ($\mathcal{E}_{\text{res}\to\text{loc}}$) and own at least one `device` ($\mathcal{E}_{\text{res}\to\text{dev}}$).
 2. **Component Integrity**: Every `device` is linked to its constituent replacement parts ($\mathcal{E}_{\text{dev}\to\text{part}}$).
 3. **Automatic Inverse Edge Creation**: For every directed relation $(\text{src}, r, \text{dst})$, its converse $(\text{dst}, r^{-1}, \text{src})$ is automatically constructed (e.g., `(device, owned_by, resident)`), ensuring bidirectional message passing in all GNN layers.
+

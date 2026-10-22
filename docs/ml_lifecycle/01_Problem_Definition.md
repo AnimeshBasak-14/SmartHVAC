@@ -77,6 +77,7 @@ $$\mathcal{L}_{\text{uncertainty}}(\Theta, \mathbf{\sigma}) = \sum_{i=1}^4 \left
 
 To guarantee executive feasibility for Argos reviewers and corporate stakeholders, the system enforces the following non-negotiable constraints:
 1. **Guaranteed Positive Net Profit**: Net Operating Profit must remain strictly positive ($\text{Net Profit} > 0$) across all 12 calendar months, avoiding seasonal insolvency.
-2. **High Cost-Efficiency Ratio**: The ratio of Gross Revenue to Operating Expenditure must exceed $6.0\text{x}$ annually (achieved: **7.82x**).
-3. **Proactive Savings Threshold**: Cost savings over the unoptimized reactive repair baseline must exceed $+15\%$ (achieved: **+24.23%**).
+2. **High Cost-Efficiency Ratio**: The ratio of Gross Revenue to Operating Expenditure must exceed $6.0\text{x}$ annually (achieved: **7.764x mean / 7.676x aggregate**).
+3. **Proactive Savings Threshold**: Cost savings over the unoptimized reactive repair baseline must exceed $+15\%$ (achieved: **+22.64% avg, peak +28.4%**).
 4. **Computational Latency**: Inference on the entire 12-month graph topology must execute in $< 500\text{ ms}$ on commodity hardware, and fine-tuning must execute in $< 60\text{ s}$ on an NVIDIA Tesla V100 GPU (achieved: **17.0 s**).
+

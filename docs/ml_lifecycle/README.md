@@ -43,4 +43,5 @@ flowchart TD
 * **Power MSE**: Reduced by **$92.18\%$** ($0.8364 \to 0.0654$).
 * **Failure F1 Score**: Increased from **$0.540 \to 0.697$** (432 high-risk units detected).
 * **Sleeper Churn F1 Score**: Increased from **$0.397 \to 0.646$** (240 false-positives eliminated).
-* **Annual Net Profit**: **₹2.27 Cr** with a Cost-Efficiency Ratio of **7.82x** ($+24.23\%$ cost savings vs. reactive).
+* **Annual Net Profit**: **₹2.27 Cr** (`₹2,27,01,359.44`) with a Cost-Efficiency Ratio of **7.764x mean / 7.676x aggregate** ($+22.64\%$ cost savings vs. reactive).
+

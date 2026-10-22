@@ -73,3 +73,4 @@ Sleeper Rate (R > 90 days): 33.28% (1,435 dormant customers)
 ### Key Insights:
 * Exactly **$33.28\%$ of customers exceed 90 days of inactivity**, providing the empirical basis for the sleeper churn label $y_{\text{sleeper}}$.
 * Monetary expenditure exhibits extreme right-skewness ($\max = £349,164$), necessitating **logarithmic scaling** ($\log(1 + M)$) to prevent high-net-worth outliers from destabilizing resident node embeddings.
+
