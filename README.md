@@ -22,6 +22,7 @@ connector is included but optional.
 | [Dataset guide](docs/DATASET_GUIDE_WHAT_WHY_HOW_WHERE.md) | The 4 node tables and 3 edge tables, month encoding ($`\sin/\cos`$), normalisation |
 | [Code reference](hvac_gml_project/README.md) | What each source file does |
 | [Q&A](docs/q&a.md) | Questions we expect in the viva |
+| [Why hetero-GraphSAGE and not XGBoost](docs/WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md) | Our reasons for the model choice, and the limits of our benchmark |
 
 ## ML lifecycle notes
 

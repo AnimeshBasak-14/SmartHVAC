@@ -175,7 +175,8 @@ def load_financial_data():
         if "optimal_spare_parts_units" not in df.columns:
             df["optimal_spare_parts_units"] = 1800
         if "baseline_expenditure_inr" not in df.columns:
-            df["baseline_expenditure_inr"] = df["expenditure_inr"] * 1.35
+            # cost_efficiency_gain_pct = (reactive - planned) / reactive * 100, so reactive = planned / (1 - gain)
+            df["baseline_expenditure_inr"] = df["expenditure_inr"] / (1.0 - df["cost_efficiency_gain_pct"] / 100.0)
         if "cooling_multiplier" not in df.columns:
             df["cooling_multiplier"] = [Config.MONTH_REGIME[int(m)][2] for m in df["month"]]
         if "heating_multiplier" not in df.columns:
@@ -673,7 +674,7 @@ with tab_p3:
     p3_m4.metric("Campaign CAC Budget", f"₹{biz_inputs.marketing_campaign_cost_per_user:,.0f} / user", f"Total: {format_inr(mktg_cost)}")
 
     st.markdown("#### Customers and suggested products")
-    st.caption("Orange = active, red = inactive. Dashed lines are the products the link predictor suggests.")
+    st.caption("Each small circle is a customer: red = inactive (engagement below 0.42), orange = active. The number in its label is its engagement score. Grey squares are locations, and each customer is linked to the location they live in. Dashed purple lines point from inactive customers to the off-season product we would offer.")
 
     col_p3_graph, col_p3_chart = st.columns([1.1, 1.0])
 
@@ -686,44 +687,44 @@ with tab_p3:
         else:
             net_res.toggle_physics(False)
 
-        sample_res_p3 = df_res_eval.head(35)
+        # 14 inactive and 10 active customers, so both groups are visible.
+        inactive_rows = df_res_eval[df_res_eval["sleeper_status"] == "SLEEPER (Dormant)"].head(14)
+        active_rows = df_res_eval[df_res_eval["sleeper_status"] == "ACTIVE"].head(10)
+        sample_res_p3 = pd.concat([inactive_rows, active_rows])
+
+        for lid in sorted(set(sample_res_p3["location_id"].astype(int))):
+            loc_name = df_loc.loc[df_loc["location_id"].astype(int) == lid, "name"].iloc[0]
+            net_res.add_node(f"LOC_{lid}", label=str(loc_name), shape="box", color="#475569", size=22,
+                             title=f"Location: {loc_name}")
+
         for _, r in sample_res_p3.iterrows():
             rid = int(r["resident_id"])
             is_sleep = r["sleeper_status"] == "SLEEPER (Dormant)"
-            color = "#ef4444" if is_sleep else "#f59e0b"
             net_res.add_node(
                 f"RES_{rid}",
-                label=f"{'Sleeper' if is_sleep else 'Resident'}_{rid}",
-                color=color,
-                size=18 if is_sleep else 13,
+                label=f"C{rid}  {r['dynamic_engagement']:.2f}",
+                color="#ef4444" if is_sleep else "#f59e0b",
+                size=16,
                 title=(
-                    f"Customer ID: {rid}\nStatus: {r['sleeper_status']}\n"
-                    f"Engagement Score: {r['dynamic_engagement']:.2f}\n"
-                    f"Tenure: {r['tenure_months']} months\n"
-                    f"Income Bracket: {r['income_tier']}\n"
-                    f"Product Recommendation: {r['recommended_cross_sell']}"
+                    f"Customer {rid}\nStatus: {r['sleeper_status']}\n"
+                    f"Engagement: {r['dynamic_engagement']:.2f} (inactive below 0.42)\n"
+                    f"Tenure: {r['tenure_months']} months\nIncome tier: {r['income_tier']}"
                 )
             )
+            net_res.add_edge(f"RES_{rid}", f"LOC_{int(r['location_id'])}", color="#334155", width=1.0, title="lives in")
 
-        target_appliance_name = "Winter_Geyser_SKU" if heat_mult > cool_mult else "Summer_Split_AC_SKU"
-        target_appliance_color = "#9b5de5" if heat_mult > cool_mult else "#00d4ff"
+        target_appliance_name = "Winter geyser / heater" if heat_mult > cool_mult else "Summer split AC"
         net_res.add_node(
             "TARGET_DEV_RECOMMENDED",
-            label=f"{target_appliance_name}",
-            color=target_appliance_color,
-            size=28,
-            title=f"Cross-Sell Target: {target_appliance_name}\nUnit Margin: ₹{cross_margin:,.0f}"
+            label=f"Offer: {target_appliance_name}",
+            shape="box", color="#9b5de5", size=30,
+            title=f"Suggested product: {target_appliance_name}\nMargin per unit: Rs {cross_margin:,.0f}"
         )
-
-        for _, r in sample_res_p3.iterrows():
-            rid = int(r["resident_id"])
-            if r["sleeper_status"] == "SLEEPER (Dormant)":
-                net_res.add_edge(
-                    f"RES_{rid}", "TARGET_DEV_RECOMMENDED",
-                    title="PREDICTED_CROSS_SELL_LINK",
-                    color="#a855f7" if heat_mult > cool_mult else "#00d4ff",
-                    width=2.2, dashes=True
-                )
+        for _, r in inactive_rows.iterrows():
+            net_res.add_edge(
+                f"RES_{int(r['resident_id'])}", "TARGET_DEV_RECOMMENDED",
+                title="suggested product", color="#a855f7", width=1.6, dashes=True
+            )
 
         render_pyvis_network(net_res, height=470)
 
@@ -742,24 +743,25 @@ with tab_p3:
         )
         show_chart(fig_eng)
 
+        # Count inactive customers for every month with the same rule used above.
+        monthly_inactive = []
+        for m in range(1, 13):
+            _, _, c_m, h_m = Config.MONTH_REGIME[m]
+            drop_m = np.where(df_res["is_metropolitan"] == 1, 1.0 - 0.35 * h_m, 1.0 - 0.45 * c_m)
+            eng_m = np.clip(df_res["base_app_engagement"] * drop_m, 0.02, 0.99)
+            monthly_inactive.append(int((eng_m < 0.42).sum()))
+        bar_colors = ["#ef4444" if m == selected_month else "#94a3b8" for m in range(1, 13)]
         fig_sleep_trend = go.Figure()
         fig_sleep_trend.add_trace(go.Bar(
-            x=df_fin["month"], y=df_fin["sleeper_customers_identified"],
-            name="Dormant Accounts", marker_color="#ef4444"
-        ))
-        fig_sleep_trend.add_trace(go.Scatter(
-            x=df_fin["month"], y=df_fin["sleepers_reactivated"] * cross_margin / 1000,
-            name="Projected Margin (k INR)", mode="lines+markers",
-            line=dict(color="#00d4ff", width=2.5), yaxis="y2"
+            x=list(range(1, 13)), y=monthly_inactive, marker_color=bar_colors,
+            text=monthly_inactive, textposition="outside", showlegend=False
         ))
         fig_sleep_trend.update_layout(
-            title="Inactive customers and expected cross-sell margin",
+            title=f"Inactive customers per month (out of {len(df_res)}); red = selected month",
             template="plotly_dark", height=210,
             xaxis=dict(title="Month", dtick=1),
-            yaxis=dict(title="Accounts"),
-            yaxis2=dict(title="k INR", overlaying="y", side="right"),
-            margin=dict(l=20, r=20, t=35, b=20),
-            legend=dict(orientation="h", y=1.15)
+            yaxis=dict(title="Inactive customers", range=[0, max(monthly_inactive) * 1.25 + 1]),
+            margin=dict(l=20, r=20, t=35, b=20)
         )
         show_chart(fig_sleep_trend)
 
@@ -787,8 +789,20 @@ with tab_p4:
     </div>
     """, unsafe_allow_html=True)
 
-    part_factor = np.where(df_part["for_cooling_hvac"] == 1, cool_mult, heat_mult)
-    predicted_parts_demand = np.round(35.0 + 95.0 * part_factor, 1)
+    # Expected replacements per part = sum of the failure risk of the devices that use it.
+    # Devices carry more risk in their own peak season, so parts for them are needed more.
+    dev_season = np.where(df_dev["is_cooling_hvac"] == 1, cool_mult, heat_mult)
+    dev_risk = pd.Series(
+        np.clip(df_dev["base_failure_risk"].values * (0.65 + 0.95 * dev_season), 0.01, 0.99),
+        index=df_dev["device_id"].astype(int).values
+    )
+    links = e_dev_part.assign(risk=e_dev_part["device_id"].astype(int).map(dev_risk))
+    raw_need = links.groupby(links["part_id"].astype(int))["risk"].sum()
+    raw_need = df_part["part_id"].astype(int).map(raw_need).fillna(0.0).values
+    raw_need = np.maximum(raw_need, 0.25 * raw_need.mean())
+    # Scale so the average part needs 35 + 95 x (average season multiplier) units, as before.
+    base_level = 35.0 + 95.0 * np.where(df_part["for_cooling_hvac"] == 1, cool_mult, heat_mult).mean()
+    predicted_parts_demand = np.round(raw_need / raw_need.mean() * base_level, 1)
     df_part_eval = df_part.copy()
     df_part_eval["forecasted_demand"] = predicted_parts_demand
     df_part_eval["stock_status"] = np.where(
@@ -863,29 +877,35 @@ with tab_p4:
         render_pyvis_network(net_part, height=470)
 
     with col_p4_chart:
-        fig_inv = px.bar(
-            df_part_eval.head(12), x="part_name", y=["current_stock", "forecasted_demand"],
-            barmode="group", template="plotly_dark",
-            labels={"value": "Quantity (Units)", "part_name": "Part SKU"},
-            color_discrete_map={"current_stock": "#10b981", "forecasted_demand": "#ef4444"}
-        )
+        # Show the parts with the biggest shortfall first, so heating parts also appear.
+        inv_view = df_part_eval.sort_values("reorder_units_needed", ascending=False).head(12)
+        fig_inv = go.Figure()
+        fig_inv.add_trace(go.Bar(x=inv_view["part_name"], y=inv_view["current_stock"],
+                                 name="Current stock", marker_color="#10b981"))
+        fig_inv.add_trace(go.Bar(x=inv_view["part_name"], y=inv_view["forecasted_demand"],
+                                 name="Forecast demand", marker_color="#ef4444"))
         fig_inv.update_layout(
-            title="Stock vs forecast",
+            barmode="group", template="plotly_dark",
+            title="Stock vs forecast (12 parts with the largest shortfall)",
             height=230, margin=dict(l=20, r=20, t=35, b=20),
-            xaxis=dict(title="")
+            yaxis=dict(title="Units"), xaxis=dict(title=""),
+            legend=dict(orientation="h", y=1.18)
         )
         show_chart(fig_inv)
 
-        fig_cost_tradeoff = px.scatter(
-            df_part_eval, x="unit_cost_inr", y="holding_cost_monthly",
-            color="stock_status", size="forecasted_demand",
-            template="plotly_dark",
-            color_discrete_map={"Stockout Risk": "#ef4444", "Adequate Stock": "#10b981"},
-            labels={"unit_cost_inr": "Unit Cost (INR)", "holding_cost_monthly": "Monthly Holding Cost (INR)"}
-        )
+        # Money needed to bring each short part up to its forecast demand.
+        short = df_part_eval[df_part_eval["reorder_units_needed"] > 0].copy()
+        short["restock_cost_inr"] = short["reorder_units_needed"] * short["unit_cost_inr"]
+        short = short.sort_values("restock_cost_inr", ascending=True).tail(10)
+        fig_cost_tradeoff = go.Figure(go.Bar(
+            x=short["restock_cost_inr"], y=short["part_name"], orientation="h",
+            marker_color="#f59e0b"
+        ))
         fig_cost_tradeoff.update_layout(
-            title="Unit cost vs monthly holding cost",
-            height=210, margin=dict(l=20, r=20, t=35, b=20)
+            template="plotly_dark",
+            title="Cost to restock the 10 most expensive shortfalls",
+            height=210, margin=dict(l=20, r=20, t=35, b=20),
+            xaxis=dict(title="INR"), yaxis=dict(title="")
         )
         show_chart(fig_cost_tradeoff)
 

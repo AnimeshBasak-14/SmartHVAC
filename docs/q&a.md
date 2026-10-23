@@ -11,7 +11,7 @@ This document is a living repository of architectural, conceptual, and implement
    - [Q2: What did we use: GML, GNN, GCN, GraphSAGE, or something else?](#q2-what-did-we-use-gml-gnn-gcn-graphsage-or-something-else)
    - [Q3: Why use Heterogeneous GNNs (HeteroConv) instead of Homogeneous GNNs?](#q3-why-use-heterogeneous-gnns-heteroconv-instead-of-homogeneous-gnns)
    - [Q4: How does the model prevent regression loss from dominating classification loss?](#q4-how-does-the-model-prevent-regression-loss-from-dominating-classification-loss)
-   - [Q6: Why do Tabular XGBoost, Vanilla GCN, and Vanilla GAT fail compared to MultiTask Hetero-GNN?](#q6-why-do-tabular-xgboost-vanilla-gcn-and-vanilla-gat-fail-compared-to-multitask-hetero-gnn)
+   - [Q6: How did XGBoost, Vanilla GCN and Vanilla GAT compare with the MultiTask Hetero-GNN, and why did we still choose the Hetero-GNN?](#q6-how-did-xgboost-vanilla-gcn-and-vanilla-gat-compare-with-the-multitask-hetero-gnn-and-why-did-we-still-choose-the-hetero-gnn)
 3. [Business & Operational Impact](#3-business--operational-impact)
    - [Q5: How does link prediction translate to business revenue?](#q5-how-does-link-prediction-translate-to-business-revenue)
 
@@ -93,14 +93,14 @@ $$\mathcal{L}_{\text{total}} = \sum_{i=1}^4 \left( \frac{1}{2}\exp(-s_i)\mathcal
 * Regression targets (Demand and Inventory with MSE $\approx 100 - 300$) would otherwise overpower classification gradients (BCE $\approx 0.3 - 0.7$).
 * Learnable log-variance parameters $s_i$ dynamically scale down high-variance losses, ensuring balanced gradient contributions to shared message-passing layers.
 
-### Q6: Why do Tabular XGBoost, Vanilla GCN, and Vanilla GAT fail compared to MultiTask Hetero-GNN?
+### Q6: How did XGBoost, Vanilla GCN and Vanilla GAT compare with the MultiTask Hetero-GNN, and why did we still choose the Hetero-GNN?
 
 **Answer:**
-We empirically benchmarked all candidate paradigms on an **NVIDIA Tesla V100S GPU** (`10.13.1.7`) using identical splits, empirical datasets (UCI AI4I 2020, UCI Retail II, Kaggle HVAC Power), and metrics via [`hvac_gml_project/benchmark_baselines.py`](file:///c:/Users/basak/Desktop/CSC-505/Project/hvac_gml_project/benchmark_baselines.py):
+We empirically benchmarked all candidate paradigms on an **NVIDIA Tesla V100S GPU** (`10.13.1.7`) on the same 12 monthly graphs (there is no held-out set), empirical datasets (UCI AI4I 2020, UCI Retail II, Kaggle HVAC Power), and metrics via [`hvac_gml_project/benchmark_baselines.py`](file:///c:/Users/basak/Desktop/CSC-505/Project/hvac_gml_project/benchmark_baselines.py):
 
 | Model Paradigm | Demand MSE $\downarrow$ | Power MSE $\downarrow$ | Failure F1 $\uparrow$ | Sleeper Churn F1 $\uparrow$ | Inventory MSE $\downarrow$ | Total Loss $\downarrow$ | Exact Failure Mechanism |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Tabular XGBoost** | **1.59** | **0.000** | **0.851** | **0.822** | **3.15** | **5.07** | **Siloed & Relational Blindness**: Requires 5 disjoint models; cannot propagate multi-hop physical degradation or produce latent graph embeddings. |
+| **Tabular XGBoost** | **1.59** | **0.000** | **0.851** | **0.822** | **3.15** | **5.07** | **Separate models, no neighbour features**: needs 5 disjoint models and was given only each node's own features. Best scores here (in-sample). |
 | **Vanilla GCN (Homogeneous)** | 355.69 | 0.177 | 0.670 | **0.000** | 7,881.63 | 8,238.83 | **Feature Conflation & Catastrophic Divergence**: Averages incompatible physical units; completely erases minority churn signals into neighborhood centroids. |
 | **Vanilla GAT (Homogeneous)** | 249.30 | 0.186 | 0.656 | **0.000** | 324.19 | 575.02 | **Type-Blind Attention Space**: Single shared attention matrix is confounded by disparate entity features; churn drops to 0. |
 | **MultiTask Hetero-GNN (Ours)** | **33.13** | **0.065** | **0.697** | **0.646** | **12.61** | **46.46** | **Balanced Inductive GML**: Dedicated $W_r$ per relation type, Kendall uncertainty loss balancing, and end-to-end multi-task reasoning. |
@@ -113,11 +113,13 @@ Because residents connect to high-degree metropolitan locations and multiple app
 #### 2. Why Vanilla GCN Diverged Catastrophically on Inventory ($MSE = 7,881.63$)
 Inventory part costs ($₹500 - ₹8,000$) and stock counts reside on a fundamentally different scale than location temperatures ($25 - 45^\circ\text{C}$). Forcing them into the same projection space with uniform normalization causes gradient explosion and completely destabilizes inventory forecasting.
 
-#### 3. Why XGBoost's Apparent Low Loss is an Analytical Trap
-While XGBoost achieves low error on isolated in-distribution rows:
-1. **Model Fragmentation**: It requires 5 independent, uncoordinated models with 0 parameter sharing.
-2. **Topological Blindness**: If a severe monsoon surge hits a Location, XGBoost cannot propagate that stress through the connected Resident to the Device to anticipate a Part stockout 2 hops away.
-3. **No Inductive Graph Embeddings**: It cannot output structural node vectors to power the Neo4j visualization graph or perform dynamic link prediction for cross-selling counter-seasonal appliances.
+#### 3. Why we still chose the Hetero-GNN even though XGBoost scored higher
+XGBoost has the best numbers in this table, and we should say so. Three limits apply to the comparison:
+1. **No held-out data**: every model was trained and scored on the same 12 monthly graphs, so these are training-set scores. XGBoost's power error of exactly 0.000 shows it memorised the rows.
+2. **No neighbour features**: XGBoost saw only each node's own 8 features. We did not try a tabular baseline with neighbour averages added.
+3. **Rule-generated labels**: the labels are built from each node's own features plus noise, which favours a tabular model.
+
+We chose the Hetero-GNN for structural reasons: one shared model and five output heads instead of five separate XGBoost models, separate weights for each relation type, inductive scoring of new nodes (SAGEConv), and a link-prediction decoder for cross-sell. Our link predictor's AUC is 0.5 (chance level), so that last benefit is not demonstrated yet. Full discussion: [docs/WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md](WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md).
 
 ---
 
