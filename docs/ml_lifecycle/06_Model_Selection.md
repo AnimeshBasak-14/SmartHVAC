@@ -2,7 +2,7 @@
 
 > **ML Lifecycle Phase**: 06 / 10  
 > **System**: SmartHVAC & Seasonal Appliance Heterogeneous GML  
-> **Selected Architecture**: Multi-Task Heterogeneous Graph Neural Network (`HeteroConv` + `SAGEConv`)  
+> **Chosen architecture**: Multi-Task Heterogeneous Graph Neural Network (`HeteroConv` + `SAGEConv`)  
 > **Alternative Baselines Compared**: Tabular Gradient Boosted Trees (XGBoost/LightGBM), Homogeneous GNN (GCN/GAT)
 
 ---
@@ -23,7 +23,7 @@ Why did we choose a Heterogeneous Graph Neural Network (Hetero-GNN) for seasonal
 
 To compare the candidates, all baselines were trained and tested on the identical 12-month graph dataset using the benchmark suite [`hvac_gml_project/benchmark_baselines.py`](file:///c:/Users/basak/Desktop/CSC-505/Project/hvac_gml_project/benchmark_baselines.py) on an **NVIDIA Tesla V100S-PCIE-32GB GPU** (`10.13.1.7`):
 
-| Model Architecture | Demand MSE $\downarrow$ | Power MSE $\downarrow$ | Equipment Failure F1 $\uparrow$ | Sleeper Churn F1 $\uparrow$ | Inventory MSE $\downarrow$ | Total Dossier Loss $\downarrow$ | Status / Empirical Verdict |
+| Model Architecture | Demand MSE $\downarrow$ | Power MSE $\downarrow$ | Equipment Failure F1 $\uparrow$ | Sleeper Churn F1 $\uparrow$ | Inventory MSE $\downarrow$ | Total loss $\downarrow$ | Status / Empirical Verdict |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Tabular XGBoost** | **1.59** | **0.000** | **0.851** | **0.822** | **3.15** | **5.07** | **Not chosen (Siloed)**: Requires 5 disjoint models with zero topological awareness. Cannot model multi-hop failure propagation or generate shared graph embeddings. |
 | **Vanilla Homogeneous GCN**<br>*(Kipf & Welling, ICLR 2017)* | 355.69 | 0.177 | 0.670 | **0.000** | 7,881.63 | 8,238.83 | **Not chosen (Catastrophic)**: Complete collapse on minority churn ($F_1 = 0$) and extreme divergence on inventory ($MSE = 7,881.6$) due to feature conflation. |
@@ -59,17 +59,17 @@ flowchart TD
     end
 
     subgraph Backbone["Heterogeneous GNN Backbone"]
-        HConv1["HeteroConv Layer 1 (SAGEConv, 8 to 128) + ReLU + Dropout"]
-        HConv2["HeteroConv Layer 2 (SAGEConv, 128 to 128) + ReLU + Dropout"]
-        HConv3["HeteroConv Layer 3 (SAGEConv, 128 to 64) + Residual Projection"]
+        HConv1["Per-type Linear 8 to 128, then HeteroConv layer 1 (SAGEConv, 128 to 128) + LeakyReLU + residual + dropout 0.2"]
+        HConv2["HeteroConv layer 2 (SAGEConv, 128 to 128) + LeakyReLU + residual + dropout 0.2"]
+        HConv3["HeteroConv layer 3 (SAGEConv, 128 to 128) + LeakyReLU + residual + dropout 0.2"]
     end
 
     subgraph Heads["Specialized Multi-Task Heads"]
-        H_Dem["Head 1: Demand Regressor<br>Linear(64, 1) to y_demand"]
-        H_Pwr["Head 2a: Power Regressor<br>Linear(64, 1) to y_power"]
-        H_Fail["Head 2b: Failure Classifier<br>Linear(64, 1) to failure_logits"]
-        H_Churn["Head 3: Sleeper Churn Classifier<br>Linear(64, 1) to sleeper_logits"]
-        H_Inv["Head 4: Inventory Forecaster<br>Linear(64, 1) to y_inventory"]
+        H_Dem["Head 1: Demand Regressor<br>MLP(128, 64, 1) to y_demand"]
+        H_Pwr["Head 2a: Power Regressor<br>MLP(128, 64, 1) to y_power"]
+        H_Fail["Head 2b: Failure Classifier<br>MLP(128, 64, 1) to failure_logits"]
+        H_Churn["Head 3: Sleeper Churn Classifier<br>MLP(128, 64, 1) to sleeper_logits"]
+        H_Inv["Head 4: Inventory Forecaster<br>MLP(128, 64, 1) to y_inventory"]
         H_Link["Link Predictor<br>DotProduct(h_res, h_dev) to Cross-Sell Score"]
     end
 
@@ -92,10 +92,12 @@ For each node type $`v \in \mathcal{V}`$ and each incident relation $`r = (u, \t
 Aggregations across all incoming relations are summed:
 
 ```math
-\mathbf{h}_v^{(l)} = \text{ReLU} \left( \sum_{r \in \mathcal{R}_{\text{in}}(v)} \mathbf{h}_{v, r}^{(l)} \right)
+\mathbf{h}_v^{(l)} = \text{LeakyReLU} \left( \sum_{r \in \mathcal{R}_{\text{in}}(v)} \mathbf{h}_{v, r}^{(l)} \right)
 ```
 
-This guarantees that:
+The code also adds a residual connection (the previous layer's embedding) and applies dropout 0.2 after each layer.
+
+This means that:
 * A `device` embedding receives information from its owning `resident` as well as its required spare `parts`.
 * A `location` embedding aggregates the collective stress of all its resident customers.
 * An `inventory part` embedding anticipates consumption based on the aggregate seasonal power strain of all connected devices.
@@ -129,10 +131,10 @@ This guarantees that:
 4. **Inventory Replenishment Head (`head_inventory`)**:
 
 ```math
-\hat{y}_{\text{inventory}} = \text{ReLU}(\mathbf{w}_{\text{inv}}^T \mathbf{h}_{\text{part}} + b_{\text{inv}})
+\hat{y}_{\text{inventory}} = \mathbf{w}_{\text{inv}}^T \mathbf{h}_{\text{part}} + b_{\text{inv}}
 ```
 
-5. **Cross-Sell Link Predictor (`decode_cross_sell_link`)**:
+5. **Cross-Sell Link Predictor (`predict_cross_sell_links`)**:
 
 ```math
 \hat{s}_{i, j} = \sigma \left( \langle \mathbf{h}_{\text{res}, i}, \mathbf{h}_{\text{dev}, j} \rangle \right)

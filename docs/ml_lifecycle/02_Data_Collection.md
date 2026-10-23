@@ -139,10 +139,10 @@ To ground the system in verified empirical distributions, the data collection pi
 
 ## 3. The Fine-Tuning Calibration Dataset (`fine_tune_v100.py`)
 
-To eliminate synthetic baseline bias, evaluate the heterogeneous GNN on realistic enterprise distributions, and satisfy external audit requirements (Argos Review), a dedicated fine-tuning dataset was constructed and run on an NVIDIA Tesla V100 GPU (`hvac_gml_project/fine_tune_v100.py`).
+To eliminate synthetic baseline bias, evaluate the heterogeneous GNN on realistic data distributions a dedicated fine-tuning dataset was constructed and run on an NVIDIA Tesla V100 GPU (`hvac_gml_project/fine_tune_v100.py`).
 
 ### Hardware and Compute Specification
-* **Server**: Enterprise GPU Server (`10.13.1.7`)
+* **Server**: Lab GPU server (`10.13.1.7`)
 * **GPU**: NVIDIA Tesla V100S-PCIE-32GB (5,120 CUDA Cores, 640 Tensor Cores, 32 GB HBM2 VRAM, 1,134 GB/s bandwidth)
 * **Software Stack**: Ubuntu 22.04 LTS, CUDA 13.0 / 12.4, PyTorch 2.6.0, PyTorch Geometric 2.8.1
 * **Precision**: Automatic Mixed Precision (FP16 AMP via `torch.cuda.amp.autocast` and `GradScaler`)
@@ -192,21 +192,21 @@ To resolve gradient dominance where regression MSE dwarfed classification BCE, f
    * Customer Sleeper Churn Head: `pos_weight = 1.8`
 
 ### Fine-Tuning Output Artifacts
-Execution of `fine_tune_v100.py` generates three audited production artifacts stored under `hvac_gml_project/artifacts/`:
+Execution of `fine_tune_v100.py` generates three result files stored under `hvac_gml_project/artifacts/`:
 
 1. `fine_tuned_hetero_gnn_v100.pt`: Serialized PyTorch state dictionary containing calibrated model weights.
-2. `fine_tune_telemetry.json`: Audited benchmark metrics comparing pre-training against fine-tuned performance:
+2. `fine_tune_telemetry.json`: Metrics comparing pre-training against fine-tuned performance:
 
 | Metric / Objective Pillar | Pre-Fine-Tune Baseline | Post-Fine-Tune Calibrated | Absolute Delta | Relative Gain |
 | :--- | :--- | :--- | :--- | :--- |
-| **Overall Dossier Loss** | 137.04 | **46.80** | -90.24 | **-65.85% Error Reduction** |
+| **Total loss (all tasks)** | 137.04 | **46.80** | -90.24 | **-65.85% Error Reduction** |
 | **Pillar 1: Demand MSE** | 115.61 (MAE: 8.77) | **33.13** (MAE: 4.12) | -82.48 | **-71.34% Error Reduction** |
 | **Pillar 2: Power MSE** | 0.8364 (MAE: 0.749) | **0.0654** (MAE: 0.182) | -0.771 | **-92.18% Error Reduction** |
 | **Pillar 2: Failure F1 Score** | 0.540 (154 flagged) | **0.697** (432 flagged) | +0.157 | **+29.07% Precision/Recall Gain** |
 | **Pillar 3: Sleeper Churn F1** | 0.397 (518 flagged) | **0.646** (278 flagged) | +0.249 | **+62.72% Churn Detection Gain** |
 | **Pillar 4: Inventory MSE** | 19.13 (MAE: 3.45) | **12.61** (MAE: 2.68) | -6.52 | **-34.11% Error Reduction** |
 
-3. `fine_tuned_financial_metrics.csv`: 12-month audited financial ledger:
+3. `fine_tuned_financial_metrics.csv`: 12-month simulated financial ledger:
    * **Gross Annual Operating Revenue**: INR 2,61,01,851.84 (~INR 2.61 Crore, +8.65% over baseline)
    * **Annual Operating Expenditure (OPEX)**: INR 34,00,492.40 (~INR 34.00 Lakhs, exact row-sum match across all 12 months)
    * **Net Annual Operating Profit**: INR 2,27,01,359.44 (~INR 2.27 Crore, +INR 17.45 Lakhs over baseline)

@@ -2,13 +2,15 @@
 
 > **ML Lifecycle Phase**: 10 / 10  
 > **System**: SmartHVAC & Seasonal Appliance Heterogeneous GML  
-> **Monitoring Scope**: Concept Drift, Telemetry Logging, Performance Audits, Continuous Retraining
+> **Monitoring Scope**: Concept Drift, Telemetry Logging, Performance checks, Continuous Retraining
 
 ---
 
-## 1. Continuous Telemetry & Hardware Auditing
+> **Status**: only the telemetry logging in section 1 exists in the code. The drift tests, alerts and retraining schedule in sections 2 and 3 are a plan, not implemented.
 
-Production deployments require persistent tracking of inference latencies, memory overhead, and multi-task loss metrics. The system implements automated JSON telemetry logging across all runs:
+## 1. Telemetry logging
+
+The training scripts write the following to a JSON file after each run (inference latency is not logged):
 
 * **Artifact**: `hvac_gml_project/artifacts/fine_tune_telemetry.json`
 * **Logged Fields**:
@@ -16,12 +18,12 @@ Production deployments require persistent tracking of inference latencies, memor
   * `fp16_amp_enabled`: Mixed-precision status (True on Tesla V100).
   * `vram_mb`: Real-time peak GPU memory allocation.
   * `pre_fine_tune_metrics` vs. `post_fine_tune_metrics`: Continuous delta verification.
-  * `financial_summary`: Realized Revenue, OPEX, and Net Profit across the 12-month calendar.
+  * `financial_summary`: Simulated revenue, OPEX and net profit across the 12-month calendar.
   * `learned_uncertainty_log_vars`: The Kendall homoscedastic uncertainty parameter vector $`[\log \sigma_{\text{demand}}^2, \log \sigma_{\text{maint}}^2, \log \sigma_{\text{churn}}^2, \log \sigma_{\text{inv}}^2]`$.
 
 ```mermaid
 flowchart TD
-    subgraph Online_Operations["Live Production Environment"]
+    subgraph Online_Operations["Planned online setup"]
         Sensors["Appliance Sensor Telemetry (kW, Temp, Vibration)"]
         UserLogs["Resident Mobile App and Transaction Logs"]
         GridData["Regional Weather and Grid Stability Feeds"]
@@ -34,7 +36,7 @@ flowchart TD
     end
 
     subgraph Maintenance_Action["Scheduled Maintenance Actions"]
-        Alert["Alert Ops Team and Argos Monitor"]
+        Alert["Alert ops team"]
         Retrain["Trigger Incremental V100 Fine-Tuning<br>(fine_tune_v100.py with New Seasonal Window)"]
         UpdateWeights["Publish Updated fine_tuned_hetero_gnn_v100.pt"]
     end
@@ -48,7 +50,7 @@ flowchart TD
 
 ## 2. Data & Concept Drift Detection Protocols
 
-Because HVAC demand and appliance failures are inherently coupled to meteorological shifts, the system monitors two distinct forms of operational drift:
+Because HVAC demand and appliance failures are inherently coupled to meteorological shifts, we plan to monitor two kinds of drift:
 
 ### 1. Covariate (Feature) Drift: Climate Anomalies
 * **Trigger Conditions**: Unprecedented heatwaves (e.g., ambient temperatures remaining $`> 44^\circ\text{C}`$ for $`> 14\text{ days}`$), delayed monsoons, or extreme cold snaps.
@@ -68,9 +70,9 @@ Because HVAC demand and appliance failures are inherently coupled to meteorologi
 | :--- | :--- | :--- | :---: |
 | **Monthly** | Dynamic Snapshot Ingestion | Update current month index ($`m`$) and regenerate monthly graph batch | $`< 1\text{ s}`$ |
 | **Quarterly** | Incremental V100 Fine-Tuning | Execute `fine_tune_v100.py` with newly ingested empirical service logs | $`< 30\text{ s}`$ |
-| **Annual** | Full Re-Training & Schema Audit | Re-calibrate baseline weights (`train_and_monitor.py` 120 epochs) + new SKUs | $`< 5\text{ min}`$ |
+| **Annual** | Full re-training and schema review | Re-calibrate baseline weights (`train_and_monitor.py` 120 epochs) + new SKUs | $`< 5\text{ min}`$ |
 
 ### Graph Schema Evolution Without Breaking Contracts:
 * **Adding New SKUs / Appliances**: New devices (e.g., commercial heat pumps, rooftop solar inverters) can be appended to `devices.csv` with their corresponding 8-dim feature vectors and linked to existing `resident` and `part` nodes without altering the GNN architecture.
-* **Adding Geographic Hubs**: New cities or rural districts are appended to `locations.csv`. The inductive nature of `SAGEConv` allows immediate zero-shot inference on new location subgraphs without requiring retraining from scratch.
+* **Adding Geographic Hubs**: New cities or rural districts are appended to `locations.csv`. The inductive nature of `SAGEConv` should allow scoring new location subgraphs without retraining from scratch (we have not tested this).
 

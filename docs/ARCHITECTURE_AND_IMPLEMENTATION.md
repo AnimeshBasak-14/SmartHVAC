@@ -1,13 +1,13 @@
 # System Architecture, Working & Implementation Guide
 
-## Executive Overview
-This document provides a comprehensive technical walkthrough of the **HVAC & Smart Appliance Heterogeneous Graph Machine Learning (GML) System**. It outlines the mathematical formulation, heterogeneous graph topology, multi-task neural network architecture, hardware acceleration on NVIDIA Tesla V100 GPU (FP16 AMP), Neo4j graph database integration, and end-to-end execution flow mapped directly to the **10-Stage Machine Learning Lifecycle**.
+## Overview
+This document walks through the **HVAC & Smart Appliance Heterogeneous Graph Machine Learning (GML) System**. It outlines the mathematical formulation, heterogeneous graph topology, multi-task neural network architecture, hardware acceleration on NVIDIA Tesla V100 GPU (FP16 AMP), Neo4j graph database integration, and end-to-end execution flow mapped directly to the **10-Stage Machine Learning Lifecycle**.
 
 ---
 
 ## 1. End-to-End Machine Learning Lifecycle
 
-The pipeline strictly adheres to the standard 10-stage Machine Learning Lifecycle:
+The project follows the standard 10-stage Machine Learning Lifecycle:
 
 ```mermaid
 flowchart LR
@@ -19,7 +19,7 @@ flowchart LR
     P06 --> P07["07. Model Training (V100)"]
     P07 --> P08["08. Evaluation and Tuning"]
     P08 --> P09["09. Deployment (Streamlit)"]
-    P09 --> P10["10. Monitoring and Self-Healing"]
+    P09 --> P10["10. Monitoring"]
 ```
 
 | Lifecycle Stage | Pipeline Implementation & Code Mapping |
@@ -31,9 +31,9 @@ flowchart LR
 | **05. Feature Engineering & Selection** | `encode_month_features()`: Cyclical temporal transformation ($`\sin/\cos`$) of calendar month ($`1 \dots 12`$) combined with India seasonal climate regime multipliers (`cool_mult`, `heat_mult`). |
 | **06. Model Selection** | `hetero_gnn_model.py`: Multi-relational `HeteroConv` with GraphSAGE (`SAGEConv`) message passing + multi-task regression/classification heads + dot-product link prediction. |
 | **07. Model Training** | `train_and_monitor.py`: 120-epoch training on NVIDIA Tesla V100 GPU using PyTorch FP16 Automatic Mixed Precision (`torch.amp.autocast('cuda')` & `GradScaler`). |
-| **08. Model Evaluation & Tuning** | `business_financial_engine.py`: Multi-task MSE & BCE tracking, convergence monitoring, learning rate self-healing, and executive P&L statement generation. |
-| **09. Model Deployment** | `dashboard_app.py` and root `app.py`: Interactive Command Center deployed locally on port 8501 and on Streamlit Cloud with live Plotly and PyVis network visualization. |
-| **10. Model Monitoring & Maintenance** | `artifacts/training_telemetry.json`: Real-time VRAM telemetry logging, loss component auditing, and bi-directional Neo4j Bolt graph sync. |
+| **08. Model Evaluation & Tuning** | `fine_tune_v100.py`, `benchmark_baselines.py` and `business_financial_engine.py`: per-task MSE, BCE and F1 (scored on the training data), a baseline comparison, and the simulated monthly profit and loss. |
+| **09. Model Deployment** | `dashboard_app.py` and root `app.py`: Interactive dashboard deployed locally on port 8501 and on Streamlit Cloud with live Plotly and PyVis network visualization. |
+| **10. Model Monitoring & Maintenance** | `artifacts/training_telemetry.json`: VRAM and loss logging to JSON, and an optional one-way export to Neo4j. Drift monitoring is planned, not built. |
 
 ---
 
@@ -61,7 +61,7 @@ flowchart TD
 
 ### Node Specifications ($`8`$-Dimensional Input Feature Vectors)
 
-1. **`location` Node ($`N = 40`$)**:
+1. **`location` Node ($`N = 10`$)**:
 
 ```math
 \mathbf{x}_{\text{loc}} = \begin{bmatrix} \text{is\_metro}, & \frac{T_{\text{base}}}{45}, & \text{grid\_stability}, & \text{pop\_density}, & \sin(\theta), & \cos(\theta), & \mu_{\text{cool}}, & \mu_{\text{heat}} \end{bmatrix}^T
@@ -69,7 +69,7 @@ flowchart TD
 
    * Target ($`y_{\text{demand}}`$): Continuous location servicing demand units.
 
-2. **`device` Node ($`N = 180`$)**:
+2. **`device` Node ($`N = 40`$)**:
 
 ```math
 \mathbf{x}_{\text{dev}} = \begin{bmatrix} \text{is\_cooling}, & \frac{\text{price}}{60000}, & \frac{\text{margin}}{8000}, & \frac{P_{\text{load}}}{3.5}, & p_{\text{fail}}, & \sin(\theta), & \cos(\theta), & \mu_{\text{stress}} \end{bmatrix}^T
@@ -78,7 +78,7 @@ flowchart TD
    * Target 1 ($`y_{\text{power}}`$): Operating power draw (kW).
    * Target 2 ($`y_{\text{failure}}`$): Binary failure risk state ($`0`$ = Healthy, $`1`$ = Failure Imminent).
 
-3. **`resident` Node ($`N = 600`$)**:
+3. **`resident` Node ($`N = 100`$)**:
 
 ```math
 \mathbf{x}_{\text{res}} = \begin{bmatrix} \text{is\_metro}, & \text{app\_active}, & \text{engagement}_{\text{dyn}}, & \frac{\text{tenure}}{48}, & \text{income\_tier}, & \sin(\theta), & \cos(\theta), & \frac{\text{regime\_id}}{2} \end{bmatrix}^T
@@ -86,7 +86,7 @@ flowchart TD
 
    * Target ($`y_{\text{sleeper}}`$): Binary churn / dormancy flag ($`1`$ = Sleeper customer).
 
-4. **`part` Node ($`N = 50`$)**:
+4. **`part` Node ($`N = 20`$)**:
 
 ```math
 \mathbf{x}_{\text{part}} = \begin{bmatrix} \text{for\_cooling}, & \frac{\text{cost}}{10000}, & \frac{\text{holding\_cost}}{300}, & \frac{\text{stock}}{150}, & \sin(\theta), & \cos(\theta), & \mu_{\text{cool}}, & \mu_{\text{heat}} \end{bmatrix}^T
@@ -114,7 +114,7 @@ To preserve circular calendar continuity (where Month 12 smoothly transitions in
 ### Seasonal Climate Regimes (India Context)
 | Month ($`m`$) | Season Name | Regime ID | Cooling Multiplier ($`\mu_{\text{cool}}`$) | Heating Multiplier ($`\mu_{\text{heat}}`$) | Physical Mechanism |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **1** | Peak-Winter | 0 | $`0.25`$ | $`0.90`$ | Heating appliances & geysers peak in Village/Metro |
+| **1** | Winter | 0 | $`0.25`$ | $`0.90`$ | Heating appliances & geysers peak in Village/Metro |
 | **2** | Winter-Transition | 0 | $`0.40`$ | $`0.65`$ | Moderate heating demand, pre-summer HVAC checkups |
 | **3** | Spring-Warming | 1 | $`0.70`$ | $`0.30`$ | Rising temperatures, pre-cooling servicing |
 | **4** | Peak-Summer | 1 | $`0.95`$ | $`0.15`$ | Extreme ambient heat, compressor load surges |
@@ -202,27 +202,28 @@ Default weights: $`w_1 = 1.0, w_2 = 1.5, w_3 = 1.2, w_4 = 1.0`$.
 * **Architecture**: NVIDIA Volta V100 GPU (640 Tensor Cores, 32 GB HBM2 memory).
 * **Automatic Mixed Precision (AMP)**: Forward pass operations execute under `torch.amp.autocast('cuda')` in FP16 to maximize Tensor Core throughput while maintaining master weights in FP32.
 * **Gradient Scaling**: `torch.amp.GradScaler('cuda')` prevents gradient underflow in small loss terms.
-* **Self-Healing Divergence Protection**: If `NaN` or `Inf` loss is detected during backpropagation, the engine automatically catches the divergence, halves the learning rate ($`10^{-3} \to 5 \times 10^{-4}`$), and restarts training without manual intervention.
+* **Divergence retry**: If `NaN` or `Inf` loss is detected during training, the script halves the learning rate ($`10^{-3} \to 5 \times 10^{-4}`$), and restarts training without manual intervention.
 
 ---
 
 ## 6. Neo4j Graph Database Integration & Local Fallback
 
-The system includes a bi-directional Neo4j Bolt connector (`neo4j_connector.py`):
+The system includes a Neo4j Bolt connector (one-way export) (`neo4j_connector.py`):
 * **Connection**: Communicates via Bolt protocol at `bolt://localhost:7687`.
-* **Zero-Crash Graceful Fallback**: If Neo4j is offline or unreachable, the system automatically detects the connection failure, logs a non-fatal warning, switches seamlessly to local PyG in-memory graph mode, and exports pre-formulated Cypher queries to `artifacts/training_telemetry.json` for manual or scheduled batch ingestion.
+* **Fallback when Neo4j is offline**: If Neo4j is offline or unreachable, the system automatically detects the connection failure, logs a non-fatal warning, switches to local PyG in-memory graph mode, and exports pre-formulated Cypher queries to `artifacts/training_telemetry.json` for manual or scheduled batch ingestion.
 
 ---
 
 ## 7. Fine-Tuning & Multi-Task Calibration (`fine_tune_v100.py`)
 
-### Motivation & Audit Bottleneck Diagnosis
-An audit of initial pre-training (`best_hetero_gnn_v100.pt`) revealed three critical operational bottlenecks:
+### Motivation: three problems after the first run
+Reviewing the initial pre-training run (`best_hetero_gnn_v100.pt`) showed three problems:
 1. **Multi-Task Gradient Dominance**: Unweighted regression MSE for Demand ($`\sim 115 - 150`$) and Inventory ($`\sim 20 - 75`$) overpowered binary cross-entropy gradients for Churn ($`\sim 0.50`$) and Failure ($`\sim 0.70`$).
 2. **Under-Calibration in Non-Peak/Monsoon Months**: Seven out of twelve calendar months reported 0 high-risk equipment failures, failing to model monsoon humidity corrosion and voltage surges.
-3. **Late-Epoch Oscillation**: Fixed learning rates caused loss oscillations between Epoch 40 (253.39) and Epoch 120 (310.93), accompanied by over-flagged false positive churners (518 / 600).
+3. **Late-Epoch Oscillation**: Fixed learning rates caused loss oscillations between Epoch 40 (253.39) and Epoch 120 (310.93), accompanied by over-flagged false positive churners (518 flagged customer-months out of 1,200).
 
 ### Empirical Dataset Integration for Calibration
+These datasets set the starting values of some node features: device rated power and failure prior (AI4I), resident engagement, income tier and app-active flag (Online Retail II, 100 of the 4,312 profiles, one per resident), and the monthly device power level (Kaggle). The training labels are still generated by rules in `data_pipeline.py` and `fine_tune_v100.py`, so these datasets are not ground-truth labels.
 The fine-tuning pipeline (`hvac_gml_project/fine_tune_v100.py`) integrates three canonical real-world benchmark datasets:
 * **UCI AI4I 2020 Predictive Maintenance (`dataset/601`)**: Ingested 10,000 real industrial telemetry records. Extracted **Heat Dissipation Failure (`HDF`)** and **Power Failure (`PWF`)** fault rates ($`2.07\%`$) and mechanical power curves ($`P_{\text{mech}} = \tau \times \omega`$). Applied class-balanced `pos_weight = 2.5` to calibrate failure prediction heads.
 * **UCI Online Retail II (`dataset/502`)**: Parsed 525,461 transactions across 4,312 customers (`Year 2009-2010`) using RFM (Recency, Frequency, Monetary) feature engineering. Mapped Recency ($`R > 90\text{ days}`$) to ground-truth sleeper churn ($`y_{\text{sleeper}}`$), Frequency to app activity, and Monetary (CLV) to income tier. Applied `pos_weight = 1.8` for churn classification.
@@ -245,33 +246,31 @@ Furthermore, raw quadratic MSE is replaced with **SmoothL1 (Huber) Loss** ($`\be
 
 preventing outlier demand spikes from destabilizing gradient updates.
 
-### V100 GPU Execution & Reconciled Performance Results
+### V100 GPU execution and results
 Fine-tuning executed on the **NVIDIA Tesla V100S-PCIE-32GB GPU** in **17.0 seconds** across 60 calibrated epochs using FP16 Automatic Mixed Precision (AMP), `AdamW` ($`\text{lr} = 2.5 \times 10^{-4}`$), `CosineAnnealingLR` ($`T_{\max}=60, \eta_{\min}=10^{-5}`$), and gradient clipping ($`\text{max\_norm} = 1.0`$).
 
 ```
 ================================================================================
- EXECUTIVE FINE-TUNING AUDIT DOSSIER: BEFORE VS. AFTER CALIBRATION
+ FINE-TUNING RESULTS: BEFORE VS AFTER
 ================================================================================
 Metric / Objective Pillar           | Before Fine-Tune   | After Fine-Tune    | Delta       
 --------------------------------------------------------------------------------
-Overall Dossier Loss                | 137.04             | 46.80              | -65.85%
+Total loss (all tasks)              | 137.04             | 46.80              | -65.85%
 Pillar 1: Demand MSE (L_demand)     | 115.61             | 33.13              | -71.34%
 Pillar 2: Power MSE (L_power)       | 0.8364             | 0.0654             | -92.18%
 Pillar 2: Failure F1 (AI4I HDF/PWF) | 0.540              | 0.697              | +0.157 (+29.1%)
-Pillar 2: Failures Detected (Units) | 154                | 432                | +278 units
+Pillar 2: Device-months flagged    | 154                | 432                | +278       
 Pillar 3: Churn F1 (Retail II RFM)  | 0.397              | 0.646              | +0.249 (+62.7%)
-Pillar 3: Sleepers Flagged/React.   | 518 flagged        | 278 flag / 276 rct | -240 false pos.
+Pillar 3: Customer-months flagged  | 518 flagged        | 278                | -240        
 Pillar 4: Inventory MSE (L_inv)     | 19.13              | 12.61              | -34.11%
 --------------------------------------------------------------------------------
-Annual Gross Revenue                | ₹2.40 Cr           | ₹2.61 Cr           | +₹20.79 L (+8.65%)
-Annual Total OPEX                   | ₹30.67 L           | ₹34.00 L           | Proactive repairs
-Annual Net Profit                   | ₹2.10 Cr           | ₹2.27 Cr           | +₹17.45 L (100% pos.)
-Mean Cost-Efficiency Ratio          | 7.92x              | 7.76x (agg: 7.68x) | +22.64% vs. reactive
 ================================================================================
 ```
 
+After fine-tuning, the simulated 12-month figures are: revenue ₹2.61 Cr, operating cost ₹34.00 L, net profit ₹2.27 Cr, mean revenue/cost ratio 7.76x (7.68x aggregate), and 22.64% lower cost than reactive repair. The "before fine-tuning" financial figures (for example ₹2.40 Cr revenue) were removed because the first run's files were overwritten and they cannot be checked. All scores in this table are measured on the training data, with no held-out set.
+
 ### Artifact Deliverables Generated:
 * **Calibrated Weights**: `hvac_gml_project/artifacts/fine_tuned_hetero_gnn_v100.pt` (Best loss: $`46.80`$)
-* **Reconciled Financial Ledger**: `hvac_gml_project/artifacts/fine_tuned_financial_metrics.csv`
+* **Financial ledger (simulated)**: `hvac_gml_project/artifacts/fine_tuned_financial_metrics.csv`
 * **Fine-Tuning Telemetry**: `hvac_gml_project/artifacts/fine_tune_telemetry.json`
 

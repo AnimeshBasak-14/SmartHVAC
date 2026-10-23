@@ -76,6 +76,8 @@ Do not say that the hetero-GNN is the best model, or that XGBoost "fails" or giv
 
 ## 5. What would settle the question
 
+The script `hvac_gml_project/heldout_evaluation.py` does items 1 and 2 below (see [HELDOUT_EVALUATION.md](HELDOUT_EVALUATION.md)). Items 3 and 4 still need new data or code.
+
 1. Hold out data: train on 9 months and test on the last 3, or hold out a random 20% of nodes.
 2. Add a stronger tabular baseline: XGBoost with neighbour-aggregate features.
 3. Use labels that depend on neighbours, or real failure and churn data (for example the AI4I and Online

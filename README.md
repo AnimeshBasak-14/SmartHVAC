@@ -23,6 +23,7 @@ connector is included but optional.
 | [Code reference](hvac_gml_project/README.md) | What each source file does |
 | [Q&A](docs/q&a.md) | Questions we expect in the viva |
 | [Why hetero-GraphSAGE and not XGBoost](docs/WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md) | Our reasons for the model choice, and the limits of our benchmark |
+| [Held-out evaluation](docs/HELDOUT_EVALUATION.md) | How to run `heldout_evaluation.py` and report the results |
 
 ## ML lifecycle notes
 

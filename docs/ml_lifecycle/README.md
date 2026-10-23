@@ -28,8 +28,8 @@ flowchart TD
 | **04** | [**Exploratory Data Analysis (EDA)**](./04_Exploratory_Data_Analysis.md) | 12 climate regimes, thermal stress distributions, AI4I failure mode analysis, customer RFM distributions. | Complete |
 | **05** | [**Feature Engineering & Selection**](./05_Feature_Engineering_and_Selection.md) | Continuous trigonometric month encoding ($`\sin/\cos`$), 8-dimensional dense node features, bipartite edges. | Complete |
 | **06** | [**Model Selection**](./06_Model_Selection.md) | Tabular vs. GNN architectural comparison, `MultiTaskHVACHeteroGNN` (`HeteroConv` + `SAGEConv`). | Complete |
-| **07** | [**Model Training**](./07_Model_Training.md) | NVIDIA Tesla V100S GPU setup, FP16 AMP mixed precision, self-healing divergence protection. | Complete |
-| **08** | [**Model Evaluation & Tuning**](./08_Model_Evaluation_and_Tuning.md) | **Current fine-tuning status**, Kendall uncertainty weighting, Huber loss, Before vs. After audit benchmarks. | Complete & Audited |
+| **07** | [**Model Training**](./07_Model_Training.md) | NVIDIA Tesla V100S GPU setup, FP16 AMP mixed precision, retry with a lower learning rate if the loss becomes NaN. | Complete |
+| **08** | [**Model Evaluation & Tuning**](./08_Model_Evaluation_and_Tuning.md) | **Current fine-tuning status**, Kendall uncertainty weighting, Huber loss, Before vs. After benchmarks. | Complete (training-set scores) |
 | **09** | [**Model Deployment**](./09_Model_Deployment.md) | Streamlit Cloud entrypoint, Neo4j. | Complete |
 | **10** | [**Model Monitoring & Maintenance**](./10_Model_Monitoring_and_Maintenance.md) | Continuous telemetry tracking, climate covariate drift, appliance wear concept drift, schema evolution. | Complete |
 
@@ -37,8 +37,8 @@ flowchart TD
 
 ## Fine-Tuning Status Summary
 
-* **Execution Status**: **100% Completed, Benchmarked, and Audited on Tesla V100 GPU.**
-* **Overall Dossier Loss**: Reduced by **65.85%** ($`137.04 \to 46.80`$).
+* **Execution Status**: **Fine-tuning finished and benchmarked on the Tesla V100 GPU. Scores are on the training data (no held-out set).**
+* **Total loss**: Reduced by **65.85%** ($`137.04 \to 46.80`$).
 * **Demand MSE**: Reduced by **71.34%** ($`115.61 \to 33.13`$).
 * **Power MSE**: Reduced by **92.18%** ($`0.8364 \to 0.0654`$).
 * **Failure F1 Score**: Increased from **0.540 to 0.697** (432 high-risk units detected).

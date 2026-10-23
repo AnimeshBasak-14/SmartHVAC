@@ -43,14 +43,14 @@ flowchart LR
 | **Learning Rate** | $`1.0 \times 10^{-3} \to 2.5 \times 10^{-4}`$ | Scaled down during fine-tuning for smooth convergence |
 | **Weight Decay** | $`1.0 \times 10^{-4}`$ | $`L_2`$ regularization on linear projections and GNN weights |
 | **Batch Strategy** | Full-Graph Monthly Snapshots | 12 heterogeneous graph snapshots per epoch ($`m = 1 \dots 12`$) |
-| **Gradient Clipping** | $`\text{max\_norm} = 1.0`$ | Eliminates gradient explosions during multi-task backward passes |
-| **Learning Rate Scheduler** | `CosineAnnealingLR` ($`T_{\max}=60, \eta_{\min}=10^{-5}`$) | Prevents late-epoch oscillations |
+| **Gradient Clipping** (fine-tuning only) | $`\text{max\_norm} = 1.0`$ | Eliminates gradient explosions during multi-task backward passes |
+| **Learning Rate Scheduler** (fine-tuning only) | `CosineAnnealingLR` ($`T_{\max}=60, \eta_{\min}=10^{-5}`$) | Prevents late-epoch oscillations |
 
 ---
 
 ## 3. Initial 120-Epoch Training Trajectory
 
-During initial pre-training (`train_and_monitor.py`), the model converged from an uninitialized loss of $`> 23,000`$ to a stable loss plateau:
+During initial pre-training (`train_and_monitor.py`), the loss fell from over 23,000 to a few hundred but kept oscillating (253 at epoch 40, 583 at epoch 50, 311 at epoch 120):
 
 ```
 [Epoch 001/120] Loss: 23057.1211 | Demand: 15164.866 | Maint: 3.848 | Churn: 0.687 | Inv: 7885.658 | VRAM: 28.8 MB
@@ -68,11 +68,14 @@ During initial pre-training (`train_and_monitor.py`), the model converged from a
 
 ---
 
-## 4. Self-Healing Divergence Protection
+## 4. Handling a diverging loss
 
-To guarantee that training unattended never crashes due to numerical instability:
-1. The training harness monitors `avg_loss` at each epoch.
-2. If `isnan(loss)` or `isinf(loss)` occurs, or if loss spikes by $`> 10\text{x}`$, the loop catches the condition, reduces the learning rate by $`50\%`$ ($`\text{lr} \leftarrow \text{lr} \times 0.5`$), resets model parameters to the last checkpoint, and automatically restarts.
+`train_and_monitor.py` checks the loss after each pass over the 12 monthly graphs:
+1. If the loss is NaN or Inf, it halves the learning rate and restarts training from the beginning (it does not roll back to a checkpoint).
+2. It retries a limited number of times (`max_retries`), then stops with an error.
+3. It saves a checkpoint whenever the average loss is the best so far.
+
+There is no check for loss spikes. `fine_tune_v100.py` has no NaN/Inf check, but clips gradients to 1.0 and uses a cosine learning-rate schedule, which reduces the chance of divergence.
 
 ---
 
@@ -89,6 +92,6 @@ Following initial pre-training, an empirical fine-tuning phase was launched to i
 * **V100 Runtime & Telemetry**:
   * Total duration: **17.0 seconds** across 60 calibrated epochs.
   * Peak VRAM: **28.8 MB**.
-  * Best Dossier-Equivalent Loss: **46.80** (reduced from $`137.04`$, $`-65.85\%`$).
+  * Best total loss: **46.80** (reduced from $`137.04`$, $`-65.85\%`$).
   * Checkpoint Saved: `artifacts/fine_tuned_hetero_gnn_v100.pt`.
 

@@ -2,11 +2,11 @@
 
 > **ML Lifecycle Phase**: 01 / 10  
 > **System**: SmartHVAC & Seasonal Appliance Heterogeneous GML  
-> **Primary Stakeholder**: Enterprise Operations, Argos Audit Platform, CFO & COO Offices
+> **Intended users**: Operations managers of an HVAC and appliance service company
 
 ---
 
-## 1. Executive Problem Context
+## 1. Problem context
 
 Modern heating, ventilation, air conditioning (HVAC), and seasonal smart appliance management operates in a highly dynamic, interconnected environment. In diverse geographical regions such as India, operational demand, power consumption, equipment failure risks, and customer behavioral dynamics are governed by severe seasonal climate regimes:
 * **Peak Summer (April–June)**: Ambient temperatures exceed $`40^\circ\text{C}`$ in metropolitan centers, causing massive spikes in cooling demand, continuous compressor strain, and high risk of Heat Dissipation Failures (HDF).
@@ -87,8 +87,8 @@ Balanced dynamically through Kendall Homoscedastic Uncertainty Weighting:
 
 ## 4. Business & Economic Constraints
 
-To guarantee executive feasibility for Argos reviewers and corporate stakeholders, the system enforces the following non-negotiable constraints:
-1. **Guaranteed Positive Net Profit**: Net Operating Profit must remain strictly positive ($`\text{Net Profit} > 0`$) across all 12 calendar months, avoiding seasonal insolvency.
+We set the following targets. They are checked against our simulated finances, so they show the system is usable, not that a real company would reach them:
+1. **Positive net profit**: Net Operating Profit must remain strictly positive ($`\text{Net Profit} > 0`$) across all 12 calendar months, avoiding seasonal insolvency.
 2. **High Cost-Efficiency Ratio**: The ratio of Gross Revenue to Operating Expenditure must exceed $`6.0\text{x}`$ annually (achieved: **7.764x mean / 7.676x aggregate**).
 3. **Proactive Savings Threshold**: Cost savings over the unoptimized reactive repair baseline must exceed $`+15\%`$ (achieved: **+22.64% avg, peak +28.4%**).
 4. **Computational Latency**: Inference on the entire 12-month graph topology must execute in $`< 500\text{ ms}`$ on commodity hardware, and fine-tuning must execute in $`< 60\text{ s}`$ on an NVIDIA Tesla V100 GPU (achieved: **17.0 s**).

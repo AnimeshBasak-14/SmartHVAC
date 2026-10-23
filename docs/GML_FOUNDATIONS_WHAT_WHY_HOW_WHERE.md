@@ -1,7 +1,7 @@
 # Graph Machine Learning (GML) Foundations: What, Why, How & Where
 
-## Executive Summary
-This document provides an in-depth conceptual and technical reference explaining **What**, **Why**, **How**, and **Where** Graph Machine Learning (GML) is applied in the HVAC and Smart Appliance enterprise ecosystem. It contrasts GML against classical tabular machine learning models (XGBoost, Random Forest, Linear Regression) to demonstrate the unique value of relational inductive bias.
+## Summary
+This document provides an in-depth conceptual and technical reference explaining **What**, **Why**, **How**, and **Where** Graph Machine Learning (GML) is applied in the HVAC and smart-appliance service business. It contrasts GML against classical tabular machine learning models (XGBoost, Random Forest, Linear Regression) to explain where a graph model can add value and where it may not. See also [WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md](WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md).
 
 ---
 
@@ -46,17 +46,17 @@ Classical machine learning algorithms (such as XGBoost, LightGBM, Random Forest,
 \mathcal{D} = \{(\mathbf{x}_1, y_1), (\mathbf{x}_2, y_2), \dots, (\mathbf{x}_N, y_N)\}, \quad (\mathbf{x}_i \perp\!\!\!\perp \mathbf{x}_j)
 ```
 
-In an interconnected smart appliance and utility network, **the I.I.D. assumption is completely invalid**. 
+In an interconnected smart appliance and utility network, **the I.I.D. assumption is a poor fit**. 
 
 ### Tabular ML vs. Graph Machine Learning Comparison
 
-| Dimension | Classical Tabular ML (XGBoost, Random Forest) | Heterogeneous Graph ML (PyG HeteroConv) | Why GML Wins |
+| Dimension | Classical Tabular ML (XGBoost, Random Forest) | Heterogeneous Graph ML (PyG HeteroConv) | Possible advantage of GML |
 | :--- | :--- | :--- | :--- |
-| **Data Representation** | Flat 2D rows & columns. Relational ties must be flattened with clumsy manual joins. | Direct graph topology preserving topological adjacency and multi-hop paths. | Eliminates data leakage and catastrophic table bloating from large cross-joins. |
-| **Relational Inductive Bias** | Zero. The model cannot naturally infer that a customer living in an unstable grid location affects device compressor stress. | Strong relational inductive bias. Node representations are informed by their $`k`$-hop neighbors. | Device health predictions explicitly factor in location grid instability and resident usage behavior. |
-| **Topological Fault Propagation** | Failures are treated as isolated events. Cannot propagate component failures through system dependencies. | Message passing propagates fault signals from parts (e.g., faulty capacitor) to parent appliances. | Accurately identifies root-cause hardware failures before catastrophic failure occurs. |
-| **Cross-Selling & Link Prediction** | Standard collaborative filtering or classification; fails on new or sparse users. | Bilateral latent dot-product link prediction ($`\sigma(\langle \mathbf{h}_r, \mathbf{h}_d \rangle)`$). | Recommends counter-seasonal appliances to reactivate "sleeper" users based on structural network similarities. |
-| **Multi-Objective Synthesis** | Requires building and maintaining 4 separate decoupled models with zero knowledge sharing. | Single multi-task backbone with shared message passing layers and 4 task-specific heads. | Shared latent representations improve sample efficiency across all tasks simultaneously. |
+| **Data Representation** | Flat 2D rows & columns. Relational ties must be flattened with clumsy manual joins. | Direct graph topology preserving topological adjacency and multi-hop paths. | Avoids building large manual joins. |
+| **Relational Inductive Bias** | None built in. The model only sees neighbour information if we add it by hand, so it does not naturally infer that a customer living in an unstable grid location affects device compressor stress. | Strong relational inductive bias. Node representations are informed by their $`k`$-hop neighbors. | Device health predictions explicitly factor in location grid instability and resident usage behavior. |
+| **Topological Fault Propagation** | Rows are treated as independent unless neighbour features are added by hand. | Message passing propagates fault signals from parts (e.g., faulty capacitor) to parent appliances. | Can use signals from linked parts and devices. We have not tested this on real failure data. |
+| **Cross-Selling & Link Prediction** | Needs pair features (we tried this in the benchmark); ignores the wider graph structure. | Bilateral latent dot-product link prediction ($`\sigma(\langle \mathbf{h}_r, \mathbf{h}_d \rangle)`$). | Meant to suggest counter-seasonal appliances to inactive customers. Our link predictor is not yet shown to work (AUC 0.5). |
+| **Multi-Objective Synthesis** | Needs separate models per task (5 outputs here) with no shared representation. | Single multi-task backbone with shared message passing layers and 5 output heads (4 loss terms). | Shared representations can help when the tasks are related. We did not run an ablation to test this. |
 
 ---
 
@@ -77,7 +77,7 @@ sequenceDiagram
     Note over MP: 3 Message Passing Iterations (Neighborhood Aggregation + Skip Connections)
     MP->>Heads: Enriched contextual embeddings h3
     Heads->>Fin: Predictions (Demand, Power, Failure Risk, Churn, Inventory)
-    Fin->>Fin: Audit Revenue, Cost Savings, and Operating Margins
+    Fin->>Fin: Compute Revenue, Cost Savings, and Operating Margins
 ```
 
 ### 1. Heterogeneous Feature Projection
@@ -116,7 +116,7 @@ P(\text{Cross-Sell Adoption}) = \sigma\left(\mathbf{h}_u^T \mathbf{h}_d\right)
 
 ---
 
-## 4. WHERE Is GML Applied Across the Enterprise?
+## 4. Where GML could be used in the business
 
 ```mermaid
 flowchart TD
@@ -125,11 +125,11 @@ flowchart TD
     GML --> FieldOps["Field Service and Dispatch<br>- Spatio-temporal workload balancing<br>- Metro vs. Village seasonal routing"]
     GML --> Fleet["Preventive Fleet Maintenance<br>- Power anomaly detection<br>- Catastrophic breakdown prevention"]
     GML --> Marketing["Customer Retention (CRM)<br>- Sleeper customer reactivation<br>- Counter-seasonal cross-sell campaigns"]
-    GML --> SCM["Supply Chain and Inventory<br>- Warehouse parts forecasting<br>- Stockout SLA penalty elimination"]
+    GML --> SCM["Supply Chain and Inventory<br>- Warehouse parts forecasting<br>- Stockout penalty reduction"]
 ```
 
 ### 1. Spatio-Temporal Field Service Dispatch
-* **Where**: Operations & Dispatch Command Center.
+* **Where**: Operations and dispatch dashboard.
 * **How GML Helps**: Traditional regression ignores that rural village demand surges for heating appliances in winter while metropolitan cooling demand collapses. GML leverages location grid stability and micro-climate embeddings to forecast neighborhood-level technician dispatch requirements.
 
 ### 2. Preventive Fleet Maintenance
@@ -184,16 +184,17 @@ flowchart TD
 \mathcal{L}(\mathbf{W}, s_1, s_2, s_3, s_4) = \sum_{i=1}^4 \left( \frac{1}{2} \exp(-s_i) \mathcal{L}_i + \frac{1}{2} s_i \right)
 ```
 
-   The network dynamically learns the relative precision $`\exp(-s_i)`$ of each task head. Regression tasks are automatically scaled down by $`\approx \exp(-4.5) \approx 0.011`$, perfectly matching the scale of the classification BCE gradients ($`\approx \exp(-0.5) \approx 0.606`$).
+   The network learns a precision $`\exp(-s_i)`$ for each task. The starting values are $`s = [4.5, 0.5, 0.5, 4.0]`$. After fine-tuning the learned values are $`s = [2.78, -0.02, -0.70, 2.29]`$ (demand, maintenance, churn, inventory), which gives task weights $`0.5\exp(-s_i)`$ of about 0.03, 0.51, 1.01 and 0.05. So the two regression tasks end up with much smaller weights than the two classification tasks.
 2. **Empirical Prior Grounding**:
-   * Devices inherit true industrial mechanical power curves and **Heat Dissipation / Power Failure** priors from **UCI AI4I 2020 (`dataset/601`)**.
-   * Residents inherit true **Recency, Frequency, and Monetary (CLV)** profiles from **UCI Online Retail II (`dataset/502`)**.
-   * Locations inherit hourly thermal response curves from **Kaggle HVAC Power (`felixpradoh`)**.
+   * Device rated power and failure priors are scaled using statistics from **UCI AI4I 2020 (`dataset/601`)**.
+   * 100 residents take their engagement, income tier and app-active flag from sampled **UCI Online Retail II (`dataset/502`)** Recency, Frequency and Monetary profiles.
+   * The monthly mean power from **Kaggle HVAC Power (`felixpradoh`)** shifts the device power level for each month.
 3. **Calibrated Convergence Impact**:
-   * Overall Dossier Loss drops by **$`65.85\%`$** ($`137.04 \to 46.80`$).
+   * Total loss (training data) drops by **$`65.85\%`$** ($`137.04 \to 46.80`$).
    * Demand MSE drops by **$`71.34\%`$** ($`115.61 \to 33.13`$).
    * Power MSE drops by **$`92.18\%`$** ($`0.8364 \to 0.0654`$).
-   * Failure F1 jumps by **$`+0.157`$** ($`0.540 \to 0.697`$), detecting 432 high-risk units across all 12 calendar regimes.
-   * Sleeper Churn F1 jumps by **$`+0.249`$** ($`0.397 \to 0.646`$), eliminating 240 false-positive churn flags.
-   * Delivers **₹2.27 Cr Net Operating Profit** at a **7.764x mean / 7.676x aggregate Cost-Efficiency Ratio** (+22.64% savings over reactive baseline).
+   * Failure F1 jumps by **$`+0.157`$** ($`0.540 \to 0.697`$), and the model flags 432 of 480 device-months as failing (154 before).
+   * Sleeper Churn F1 jumps by **$`+0.249`$** ($`0.397 \to 0.646`$), while flagged customer-months fall from 518 to 278 (out of 1,200).
+   * Simulated finances (from assumed prices): **₹2.27 Cr net profit**, revenue/cost ratio **7.764x mean / 7.676x aggregate**, 22.64% lower cost than reactive repair.
+   * These scores are measured on the training data. See [WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md](WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md) for the limits.
 
