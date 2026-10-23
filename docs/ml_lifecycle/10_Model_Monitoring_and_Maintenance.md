@@ -17,7 +17,7 @@ Production deployments require persistent tracking of inference latencies, memor
   * `vram_mb`: Real-time peak GPU memory allocation.
   * `pre_fine_tune_metrics` vs. `post_fine_tune_metrics`: Continuous delta verification.
   * `financial_summary`: Realized Revenue, OPEX, and Net Profit across the 12-month calendar.
-  * `learned_uncertainty_log_vars`: The Kendall homoscedastic uncertainty parameter vector $[\log \sigma_{\text{demand}}^2, \log \sigma_{\text{maint}}^2, \log \sigma_{\text{churn}}^2, \log \sigma_{\text{inv}}^2]$.
+  * `learned_uncertainty_log_vars`: The Kendall homoscedastic uncertainty parameter vector $`[\log \sigma_{\text{demand}}^2, \log \sigma_{\text{maint}}^2, \log \sigma_{\text{churn}}^2, \log \sigma_{\text{inv}}^2]`$.
 
 ```mermaid
 flowchart TD
@@ -51,13 +51,13 @@ flowchart TD
 Because HVAC demand and appliance failures are inherently coupled to meteorological shifts, the system monitors two distinct forms of operational drift:
 
 ### 1. Covariate (Feature) Drift: Climate Anomalies
-* **Trigger Conditions**: Unprecedented heatwaves (e.g., ambient temperatures remaining $> 44^\circ\text{C}$ for $> 14\text{ days}$), delayed monsoons, or extreme cold snaps.
+* **Trigger Conditions**: Unprecedented heatwaves (e.g., ambient temperatures remaining $`> 44^\circ\text{C}`$ for $`> 14\text{ days}`$), delayed monsoons, or extreme cold snaps.
 * **Metric Monitored**: Kolmogorov-Smirnov (KS) test on ambient temperature and humidity distributions against baseline training profiles.
-* **Response**: Dynamic update of the seasonal stress multipliers ($cool\_mult, heat\_mult$) without requiring full structural graph re-indexing.
+* **Response**: Dynamic update of the seasonal stress multipliers ($`cool\_mult, heat\_mult`$) without requiring full structural graph re-indexing.
 
 ### 2. Concept Drift: Appliance Wear & Component Degradation
 * **Trigger Conditions**: Older HVAC units experiencing higher failure rates than baseline factory ratings, or shifting resident churn patterns due to economic recessions.
-* **Metric Monitored**: Mean Squared Error (MSE) on mechanical power predictions exceeding $0.20\text{ kW}^2$ (baseline: $0.0654$) or failure prediction F1 dropping below $0.60$ (baseline: $0.697$).
+* **Metric Monitored**: Mean Squared Error (MSE) on mechanical power predictions exceeding $`0.20\text{ kW}^2`$ (baseline: $`0.0654`$) or failure prediction F1 dropping below $`0.60`$ (baseline: $`0.697`$).
 * **Response**: Re-calibration of `base_failure_risk` in `devices.csv` using updated field service logs.
 
 ---
@@ -66,9 +66,9 @@ Because HVAC demand and appliance failures are inherently coupled to meteorologi
 
 | Cadence | Action Item | Target Script / Artifact | SLA / Duration |
 | :--- | :--- | :--- | :---: |
-| **Monthly** | Dynamic Snapshot Ingestion | Update current month index ($m$) and regenerate monthly graph batch | $< 1\text{ s}$ |
-| **Quarterly** | Incremental V100 Fine-Tuning | Execute `fine_tune_v100.py` with newly ingested empirical service logs | $< 30\text{ s}$ |
-| **Annual** | Full Re-Training & Schema Audit | Re-calibrate baseline weights (`train_and_monitor.py` 120 epochs) + new SKUs | $< 5\text{ min}$ |
+| **Monthly** | Dynamic Snapshot Ingestion | Update current month index ($`m`$) and regenerate monthly graph batch | $`< 1\text{ s}`$ |
+| **Quarterly** | Incremental V100 Fine-Tuning | Execute `fine_tune_v100.py` with newly ingested empirical service logs | $`< 30\text{ s}`$ |
+| **Annual** | Full Re-Training & Schema Audit | Re-calibrate baseline weights (`train_and_monitor.py` 120 epochs) + new SKUs | $`< 5\text{ min}`$ |
 
 ### Graph Schema Evolution Without Breaking Contracts:
 * **Adding New SKUs / Appliances**: New devices (e.g., commercial heat pumps, rooftop solar inverters) can be appended to `devices.csv` with their corresponding 8-dim feature vectors and linked to existing `resident` and `part` nodes without altering the GNN architecture.

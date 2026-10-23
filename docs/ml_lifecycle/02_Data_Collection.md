@@ -42,15 +42,15 @@ flowchart TD
 * **Source**: UCI Machine Learning Repository
 * **Volume**: 10,000 empirical machine operational logs
 * **Key Attributes**:
-  * `Air temperature [K]`: Ambient thermal condition (mean: $300.0\text{ K} = 26.85^\circ\text{C}$).
-  * `Process temperature [K]`: Internal operating temperature (mean: $310.0\text{ K}$).
+  * `Air temperature [K]`: Ambient thermal condition (mean: $`300.0\text{ K} = 26.85^\circ\text{C}`$).
+  * `Process temperature [K]`: Internal operating temperature (mean: $`310.0\text{ K}`$).
   * `Rotational speed [rpm]`: Compressor and fan motor angular velocity.
   * `Torque [Nm]`: Mechanical load on the drive shaft.
   * `Tool wear [min]`: Cumulative mechanical fatigue.
   * **Failure Modes**:
-    * `HDF` (Heat Dissipation Failure): 115 occurrences ($1.15\%$).
-    * `PWF` (Power Failure): 95 occurrences ($0.95\%$).
-    * Combined critical fault occurrences: 207 unique events ($2.07\%$).
+    * `HDF` (Heat Dissipation Failure): 115 occurrences ($`1.15\%`$).
+    * `PWF` (Power Failure): 95 occurrences ($`0.95\%`$).
+    * Combined critical fault occurrences: 207 unique events ($`2.07\%`$).
 * **Mapping**: Ingested directly into `data_pipeline.py` and `fine_tune_v100.py` to establish empirical device failure priors and mechanical power ratings.
 
 ### Dataset 2: UCI Online Retail II (`dataset/502`)
@@ -70,12 +70,12 @@ flowchart TD
 * **Volume**: 8,760 hourly records spanning a full 365-day operational calendar.
 * **Key Attributes**:
   * `timestamp`: Hourly temporal index.
-  * `Month`: Calendar month ($1 \dots 12$).
-  * `Ambient_Temp`: Outdoor temperature ($10.5^\circ\text{C}$ to $44.2^\circ\text{C}$).
-  * `Indoor_Temp`: Indoor thermostat setpoint ($21.0^\circ\text{C}$ to $24.0^\circ\text{C}$).
-  * `Humidity_pct`: Relative atmospheric humidity ($20\%$ to $98\%$).
+  * `Month`: Calendar month ($`1 \dots 12`$).
+  * `Ambient_Temp`: Outdoor temperature ($`10.5^\circ\text{C}`$ to $`44.2^\circ\text{C}`$).
+  * `Indoor_Temp`: Indoor thermostat setpoint ($`21.0^\circ\text{C}`$ to $`24.0^\circ\text{C}`$).
+  * `Humidity_pct`: Relative atmospheric humidity ($`20\%`$ to $`98\%`$).
   * `HVAC_Mode`: Operational state (`Cooling`, `Heating`, `Idle`).
-  * `Power_kW`: Measured power draw (mean: $1.85\text{ kW}$, peak: $3.85\text{ kW}$).
+  * `Power_kW`: Measured power draw (mean: $`1.85\text{ kW}`$, peak: $`3.85\text{ kW}`$).
 * **Mapping**: Ingested into `telemetry_premodel.py` to calibrate monthly energy demand curves and seasonal thermal loads.
 
 ---

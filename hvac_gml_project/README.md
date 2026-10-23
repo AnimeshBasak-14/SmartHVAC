@@ -29,7 +29,7 @@ hvac_gml_project/
 * **Key Components**:
   * `Config.DEVICE`: Automatically detects CUDA acceleration (`cuda:0` if available, else `cpu`).
   * `Config.USE_AMP_FP16`: Enables Volta Tensor Core mixed-precision training on Tesla V100 GPUs.
-  * `Config.MONTH_REGIME`: Comprehensive dictionary mapping months $1 \dots 12$ to Indian climate regimes (Winter, Spring, Summer, Monsoon, Autumn) and setting cooling vs. heating multipliers.
+  * `Config.MONTH_REGIME`: Comprehensive dictionary mapping months $`1 \dots 12`$ to Indian climate regimes (Winter, Spring, Summer, Monsoon, Autumn) and setting cooling vs. heating multipliers.
   * Paths: Path-safe resolution for `./data` and `./artifacts`.
 
 ---
@@ -37,7 +37,7 @@ hvac_gml_project/
 ### Module 2: `data_pipeline.py`
 * **Purpose**: Synthesizes or ingests schema-aligned relational CSVs and constructs monthly `HeteroData` PyTorch Geometric objects.
 * **Key Functions**:
-  * `encode_month_features(month)`: Transforms calendar month into continuous $\sin$ and $\cos$ cyclical encodings and retrieves seasonal multipliers.
+  * `encode_month_features(month)`: Transforms calendar month into continuous $`\sin`$ and $`\cos`$ cyclical encodings and retrieves seasonal multipliers.
   * `HVACGraphDatasetBuilder.generate_or_load_tables()`: Loads persisted CSV tables (`locations`, `devices`, `parts`, `residents`, and edges) from disk, or synthesizes them deterministically if missing.
   * `HVACGraphDatasetBuilder.build_monthly_hetero_data(month)`: Injects cyclical features into all 4 node types and returns a bidirectional `HeteroData` graph snapshot.
 
@@ -63,7 +63,7 @@ hvac_gml_project/
 ### Module 5: `hetero_gnn_model.py`
 * **Purpose**: Deep multi-task heterogeneous graph neural network backbone.
 * **Key Architecture**:
-  * `self.lin_dict`: Node-specific linear projections transforming $8$-dimensional inputs to $128$-dimensional embeddings.
+  * `self.lin_dict`: Node-specific linear projections transforming $`8`$-dimensional inputs to $`128`$-dimensional embeddings.
   * `self.convs`: 3-layer `HeteroConv` utilizing `SAGEConv` over all 6 bidirectional relation types with residual skip-connections and dropout.
   * 4 Specialized Output Heads:
     1. `head_demand`: Location-level demand regression.

@@ -40,17 +40,17 @@ flowchart LR
 | :--- | :---: | :--- |
 | **Number of Epochs** | 120 (Initial) / 60 (Fine-Tuning) | Sufficient for convergence across all 12 monthly graph snapshots |
 | **Optimizer** | `AdamW` | Decoupled weight decay prevents overfitting on static node features |
-| **Learning Rate** | $1.0 \times 10^{-3} \to 2.5 \times 10^{-4}$ | Scaled down during fine-tuning for smooth convergence |
-| **Weight Decay** | $1.0 \times 10^{-4}$ | $L_2$ regularization on linear projections and GNN weights |
-| **Batch Strategy** | Full-Graph Monthly Snapshots | 12 heterogeneous graph snapshots per epoch ($m = 1 \dots 12$) |
-| **Gradient Clipping** | $\text{max\_norm} = 1.0$ | Eliminates gradient explosions during multi-task backward passes |
-| **Learning Rate Scheduler** | `CosineAnnealingLR` ($T_{\max}=60, \eta_{\min}=10^{-5}$) | Prevents late-epoch oscillations |
+| **Learning Rate** | $`1.0 \times 10^{-3} \to 2.5 \times 10^{-4}`$ | Scaled down during fine-tuning for smooth convergence |
+| **Weight Decay** | $`1.0 \times 10^{-4}`$ | $`L_2`$ regularization on linear projections and GNN weights |
+| **Batch Strategy** | Full-Graph Monthly Snapshots | 12 heterogeneous graph snapshots per epoch ($`m = 1 \dots 12`$) |
+| **Gradient Clipping** | $`\text{max\_norm} = 1.0`$ | Eliminates gradient explosions during multi-task backward passes |
+| **Learning Rate Scheduler** | `CosineAnnealingLR` ($`T_{\max}=60, \eta_{\min}=10^{-5}`$) | Prevents late-epoch oscillations |
 
 ---
 
 ## 3. Initial 120-Epoch Training Trajectory
 
-During initial pre-training (`train_and_monitor.py`), the model converged from an uninitialized loss of $> 23,000$ to a stable loss plateau:
+During initial pre-training (`train_and_monitor.py`), the model converged from an uninitialized loss of $`> 23,000`$ to a stable loss plateau:
 
 ```
 [Epoch 001/120] Loss: 23057.1211 | Demand: 15164.866 | Maint: 3.848 | Churn: 0.687 | Inv: 7885.658 | VRAM: 28.8 MB
@@ -72,7 +72,7 @@ During initial pre-training (`train_and_monitor.py`), the model converged from a
 
 To guarantee that training unattended never crashes due to numerical instability:
 1. The training harness monitors `avg_loss` at each epoch.
-2. If `isnan(loss)` or `isinf(loss)` occurs, or if loss spikes by $> 10\text{x}$, the loop catches the condition, reduces the learning rate by $50\%$ ($\text{lr} \leftarrow \text{lr} \times 0.5$), resets model parameters to the last checkpoint, and automatically restarts.
+2. If `isnan(loss)` or `isinf(loss)` occurs, or if loss spikes by $`> 10\text{x}`$, the loop catches the condition, reduces the learning rate by $`50\%`$ ($`\text{lr} \leftarrow \text{lr} \times 0.5`$), resets model parameters to the last checkpoint, and automatically restarts.
 
 ---
 
@@ -81,15 +81,15 @@ To guarantee that training unattended never crashes due to numerical instability
 Following initial pre-training, an empirical fine-tuning phase was launched to incorporate real-world industrial and transactional benchmark datasets:
 * **Input Checkpoint**: `artifacts/best_hetero_gnn_v100.pt`
 * **Real Datasets Ingested**:
-  * UCI AI4I 2020 (`dataset/601`): Heat Dissipation Failure (`HDF`) and Power Failure (`PWF`) ground-truth labels + rotational power curves ($1.2 - 3.6\text{ kW}$).
-  * UCI Online Retail II (`dataset/502`): 4,312 customer RFM profiles ($R > 90\text{d}$ sleeper churn, Monetary CLV tiers).
+  * UCI AI4I 2020 (`dataset/601`): Heat Dissipation Failure (`HDF`) and Power Failure (`PWF`) ground-truth labels + rotational power curves ($`1.2 - 3.6\text{ kW}`$).
+  * UCI Online Retail II (`dataset/502`): 4,312 customer RFM profiles ($`R > 90\text{d}`$ sleeper churn, Monetary CLV tiers).
   * Kaggle HVAC Power (`felixpradoh`): 8,760 hourly thermal telemetry curves across 12 climate regimes.
-* **Loss Function**: Kendall Homoscedastic Uncertainty Weighting + SmoothL1 (Huber, $\beta = 4.0$) Loss + class-balanced `pos_weight` ($2.5$ for failure, $1.8$ for churn).
-* **Optimizer**: AdamW ($\text{lr} = 2.5 \times 10^{-4}$, $\text{weight\_decay} = 10^{-4}$), `CosineAnnealingLR` ($T_{\max}=60, \eta_{\min}=10^{-5}$), gradient clipping ($\text{max\_norm} = 1.0$).
+* **Loss Function**: Kendall Homoscedastic Uncertainty Weighting + SmoothL1 (Huber, $`\beta = 4.0`$) Loss + class-balanced `pos_weight` ($`2.5`$ for failure, $`1.8`$ for churn).
+* **Optimizer**: AdamW ($`\text{lr} = 2.5 \times 10^{-4}`$, $`\text{weight\_decay} = 10^{-4}`$), `CosineAnnealingLR` ($`T_{\max}=60, \eta_{\min}=10^{-5}`$), gradient clipping ($`\text{max\_norm} = 1.0`$).
 * **V100 Runtime & Telemetry**:
   * Total duration: **17.0 seconds** across 60 calibrated epochs.
   * Peak VRAM: **28.8 MB**.
-  * Best Dossier-Equivalent Loss: **46.80** (reduced from $137.04$, $-65.85\%$).
+  * Best Dossier-Equivalent Loss: **46.80** (reduced from $`137.04`$, $`-65.85\%`$).
   * Checkpoint Saved: `artifacts/fine_tuned_hetero_gnn_v100.pt`.
 
 

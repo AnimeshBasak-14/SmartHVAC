@@ -12,10 +12,13 @@ This document provides an in-depth conceptual and technical reference explaining
 
 In this system, we implement a **Heterogeneous Graph Neural Network (Hetero-GNN)**. Unlike homogeneous graphs (e.g., social networks where every node is a person), a heterogeneous graph explicitly models distinct entity types with unique semantic attributes and multi-typed directional connections:
 
-$$\mathcal{G} = \left(\mathcal{V}, \mathcal{E}, \mathcal{T}_v, \mathcal{T}_e\right)$$
+```math
+\mathcal{G} = \left(\mathcal{V}, \mathcal{E}, \mathcal{T}_v, \mathcal{T}_e\right)
+```
 
-* **Node Types ($\mathcal{T}_v$)**: $\mathcal{T}_v = \{\text{Resident}, \text{Location}, \text{Device}, \text{InventoryPart}\}$
-* **Edge Types ($\mathcal{T}_e$)**: $\mathcal{T}_e = \{\text{LOCATED\_IN}, \text{HAS\_RESIDENT}, \text{OWNS}, \text{OWNED\_BY}, \text{REQUIRES\_PART}, \text{USED\_IN}\}$
+
+* **Node Types ($`\mathcal{T}_v`$)**: $`\mathcal{T}_v = \{\text{Resident}, \text{Location}, \text{Device}, \text{InventoryPart}\}`$
+* **Edge Types ($`\mathcal{T}_e`$)**: $`\mathcal{T}_e = \{\text{LOCATED\_IN}, \text{HAS\_RESIDENT}, \text{OWNS}, \text{OWNED\_BY}, \text{REQUIRES\_PART}, \text{USED\_IN}\}`$
 
 ```mermaid
 flowchart LR
@@ -39,7 +42,11 @@ flowchart LR
 ## 2. WHY Do We Use GML Instead of Tabular ML?
 
 Classical machine learning algorithms (such as XGBoost, LightGBM, Random Forest, or Multi-Layer Perceptrons) fundamentally rely on the **Independent and Identically Distributed (I.I.D.) assumption**:
-$$\mathcal{D} = \{(\mathbf{x}_1, y_1), (\mathbf{x}_2, y_2), \dots, (\mathbf{x}_N, y_N)\}, \quad (\mathbf{x}_i \perp\!\!\!\perp \mathbf{x}_j)$$
+
+```math
+\mathcal{D} = \{(\mathbf{x}_1, y_1), (\mathbf{x}_2, y_2), \dots, (\mathbf{x}_N, y_N)\}, \quad (\mathbf{x}_i \perp\!\!\!\perp \mathbf{x}_j)
+```
+
 
 In an interconnected smart appliance and utility network, **the I.I.D. assumption is completely invalid**. 
 
@@ -48,9 +55,9 @@ In an interconnected smart appliance and utility network, **the I.I.D. assumptio
 | Dimension | Classical Tabular ML (XGBoost, Random Forest) | Heterogeneous Graph ML (PyG HeteroConv) | Why GML Wins |
 | :--- | :--- | :--- | :--- |
 | **Data Representation** | Flat 2D rows & columns. Relational ties must be flattened with clumsy manual joins. | Direct graph topology preserving topological adjacency and multi-hop paths. | Eliminates data leakage and catastrophic table bloating from large cross-joins. |
-| **Relational Inductive Bias** | Zero. The model cannot naturally infer that a customer living in an unstable grid location affects device compressor stress. | Strong relational inductive bias. Node representations are informed by their $k$-hop neighbors. | Device health predictions explicitly factor in location grid instability and resident usage behavior. |
+| **Relational Inductive Bias** | Zero. The model cannot naturally infer that a customer living in an unstable grid location affects device compressor stress. | Strong relational inductive bias. Node representations are informed by their $`k`$-hop neighbors. | Device health predictions explicitly factor in location grid instability and resident usage behavior. |
 | **Topological Fault Propagation** | Failures are treated as isolated events. Cannot propagate component failures through system dependencies. | Message passing propagates fault signals from parts (e.g., faulty capacitor) to parent appliances. | Accurately identifies root-cause hardware failures before catastrophic failure occurs. |
-| **Cross-Selling & Link Prediction** | Standard collaborative filtering or classification; fails on new or sparse users. | Bilateral latent dot-product link prediction ($\sigma(\langle \mathbf{h}_r, \mathbf{h}_d \rangle)$). | Recommends counter-seasonal appliances to reactivate "sleeper" users based on structural network similarities. |
+| **Cross-Selling & Link Prediction** | Standard collaborative filtering or classification; fails on new or sparse users. | Bilateral latent dot-product link prediction ($`\sigma(\langle \mathbf{h}_r, \mathbf{h}_d \rangle)`$). | Recommends counter-seasonal appliances to reactivate "sleeper" users based on structural network similarities. |
 | **Multi-Objective Synthesis** | Requires building and maintaining 4 separate decoupled models with zero knowledge sharing. | Single multi-task backbone with shared message passing layers and 4 task-specific heads. | Shared latent representations improve sample efficiency across all tasks simultaneously. |
 
 ---
@@ -76,25 +83,41 @@ sequenceDiagram
 ```
 
 ### 1. Heterogeneous Feature Projection
-Raw input vectors $\mathbf{x}_v \in \mathbb{R}^8$ for each node type $v$ are projected into a common 128-dimensional latent space:
-$$\mathbf{h}_v^{(0)} = \text{LeakyReLU}\left(\mathbf{W}_v \mathbf{x}_v + \mathbf{b}_v\right), \quad \mathbf{W}_v \in \mathbb{R}^{128 \times 8}$$
+Raw input vectors $`\mathbf{x}_v \in \mathbb{R}^8`$ for each node type $`v`$ are projected into a common 128-dimensional latent space:
+
+```math
+\mathbf{h}_v^{(0)} = \text{LeakyReLU}\left(\mathbf{W}_v \mathbf{x}_v + \mathbf{b}_v\right), \quad \mathbf{W}_v \in \mathbb{R}^{128 \times 8}
+```
+
 
 ### 2. Multi-Relational Message Passing (`HeteroConv`)
-During each convolution layer $l$, messages are computed across all incoming relation types $r = (s, \text{rel}, t)$:
-$$\mathbf{m}_{u \to v}^{(l)} = \text{SAGEConv}_r\left(\mathbf{h}_u^{(l-1)}, \mathbf{h}_v^{(l-1)}\right)$$
+During each convolution layer $`l`$, messages are computed across all incoming relation types $`r = (s, \text{rel}, t)`$:
+
+```math
+\mathbf{m}_{u \to v}^{(l)} = \text{SAGEConv}_r\left(\mathbf{h}_u^{(l-1)}, \mathbf{h}_v^{(l-1)}\right)
+```
+
 Target node states aggregate messages from all relational neighbors:
-$$\mathbf{h}_v^{(l)} = \text{Dropout}\left(\text{LeakyReLU}\left(\sum_{r \in \mathcal{R}_v} \text{mean}_{u \in \mathcal{N}_r(v)} \mathbf{m}_{u \to v}^{(l)}\right) + \mathbf{h}_v^{(l-1)}\right)$$
+
+```math
+\mathbf{h}_v^{(l)} = \text{Dropout}\left(\text{LeakyReLU}\left(\sum_{r \in \mathcal{R}_v} \text{mean}_{u \in \mathcal{N}_r(v)} \mathbf{m}_{u \to v}^{(l)}\right) + \mathbf{h}_v^{(l-1)}\right)
+```
+
 
 ### 3. Multi-Task Output Generation
-The enriched node representations $\mathbf{h}_v^{(L)}$ feed directly into 4 specialized task heads:
-1. **Location Nodes** $\to$ Spatio-temporal demand regression ($\hat{y}_{\text{demand}}$).
-2. **Device Nodes** $\to$ Power consumption regression ($\hat{y}_{\text{power}}$) and failure risk probability ($\hat{y}_{\text{failure}}$).
-3. **Resident Nodes** $\to$ Sleeper customer churn probability ($\hat{y}_{\text{sleeper}}$).
-4. **Part Nodes** $\to$ Spare parts inventory replenishment forecasting ($\hat{y}_{\text{inventory}}$).
+The enriched node representations $`\mathbf{h}_v^{(L)}`$ feed directly into 4 specialized task heads:
+1. **Location Nodes** $`\to`$ Spatio-temporal demand regression ($`\hat{y}_{\text{demand}}`$).
+2. **Device Nodes** $`\to`$ Power consumption regression ($`\hat{y}_{\text{power}}`$) and failure risk probability ($`\hat{y}_{\text{failure}}`$).
+3. **Resident Nodes** $`\to`$ Sleeper customer churn probability ($`\hat{y}_{\text{sleeper}}`$).
+4. **Part Nodes** $`\to`$ Spare parts inventory replenishment forecasting ($`\hat{y}_{\text{inventory}}`$).
 
 ### 4. Bilateral Link Prediction
-For any customer $u$ and counter-seasonal appliance $d$:
-$$P(\text{Cross-Sell Adoption}) = \sigma\left(\mathbf{h}_u^T \mathbf{h}_d\right)$$
+For any customer $`u`$ and counter-seasonal appliance $`d`$:
+
+```math
+P(\text{Cross-Sell Adoption}) = \sigma\left(\mathbf{h}_u^T \mathbf{h}_d\right)
+```
+
 
 ---
 
@@ -131,10 +154,14 @@ flowchart TD
 ## 5. HOW Fine-Tuning Transforms Heterogeneous Graph Representations
 
 ### The Multi-Task Gradient Dominance Dilemma in GNNs
-In a multi-task Hetero-GNN, backpropagation computes the gradient of the joint loss with respect to shared message-passing weights $\mathbf{W}_{\text{conv}}$:
-$$\nabla_{\mathbf{W}} \mathcal{L}_{\text{total}} = \nabla_{\mathbf{W}} \mathcal{L}_{\text{demand}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{maint}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{churn}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{inv}}$$
+In a multi-task Hetero-GNN, backpropagation computes the gradient of the joint loss with respect to shared message-passing weights $`\mathbf{W}_{\text{conv}}`$:
 
-When regression targets (Demand and Inventory) have outputs in the range $[20, 750]$, their raw squared error ($\text{MSE} \approx 100 - 300$) produces gradients orders of magnitude larger than classification heads ($\text{BCE} \approx 0.3 - 0.7$). In an uncalibrated network, the GNN weights adapt exclusively to satisfy demand regression, leaving equipment failure and customer churn predictions under-fitted and poorly calibrated.
+```math
+\nabla_{\mathbf{W}} \mathcal{L}_{\text{total}} = \nabla_{\mathbf{W}} \mathcal{L}_{\text{demand}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{maint}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{churn}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{inv}}
+```
+
+
+When regression targets (Demand and Inventory) have outputs in the range $`[20, 750]`$, their raw squared error ($`\text{MSE} \approx 100 - 300`$) produces gradients orders of magnitude larger than classification heads ($`\text{BCE} \approx 0.3 - 0.7`$). In an uncalibrated network, the GNN weights adapt exclusively to satisfy demand regression, leaving equipment failure and customer churn predictions under-fitted and poorly calibrated.
 
 ```mermaid
 flowchart TD
@@ -158,18 +185,22 @@ flowchart TD
 
 ### The Fine-Tuning Transformation:
 1. **Homoscedastic Task Uncertainty Weighting**:
-   $$\mathcal{L}(\mathbf{W}, s_1, s_2, s_3, s_4) = \sum_{i=1}^4 \left( \frac{1}{2} \exp(-s_i) \mathcal{L}_i + \frac{1}{2} s_i \right)$$
-   The network dynamically learns the relative precision $\exp(-s_i)$ of each task head. Regression tasks are automatically scaled down by $\approx \exp(-4.5) \approx 0.011$, perfectly matching the scale of the classification BCE gradients ($\approx \exp(-0.5) \approx 0.606$).
+
+   ```math
+   \mathcal{L}(\mathbf{W}, s_1, s_2, s_3, s_4) = \sum_{i=1}^4 \left( \frac{1}{2} \exp(-s_i) \mathcal{L}_i + \frac{1}{2} s_i \right)
+   ```
+
+   The network dynamically learns the relative precision $`\exp(-s_i)`$ of each task head. Regression tasks are automatically scaled down by $`\approx \exp(-4.5) \approx 0.011`$, perfectly matching the scale of the classification BCE gradients ($`\approx \exp(-0.5) \approx 0.606`$).
 2. **Empirical Prior Grounding**:
    * Devices inherit true industrial mechanical power curves and **Heat Dissipation / Power Failure** priors from **UCI AI4I 2020 (`dataset/601`)**.
    * Residents inherit true **Recency, Frequency, and Monetary (CLV)** profiles from **UCI Online Retail II (`dataset/502`)**.
    * Locations inherit hourly thermal response curves from **Kaggle HVAC Power (`felixpradoh`)**.
 3. **Calibrated Convergence Impact**:
-   * Overall Dossier Loss drops by **$65.85\%$** ($137.04 \to 46.80$).
-   * Demand MSE drops by **$71.34\%$** ($115.61 \to 33.13$).
-   * Power MSE drops by **$92.18\%$** ($0.8364 \to 0.0654$).
-   * Failure F1 jumps by **$+0.157$** ($0.540 \to 0.697$), detecting 432 high-risk units across all 12 calendar regimes.
-   * Sleeper Churn F1 jumps by **$+0.249$** ($0.397 \to 0.646$), eliminating 240 false-positive churn flags.
+   * Overall Dossier Loss drops by **$`65.85\%`$** ($`137.04 \to 46.80`$).
+   * Demand MSE drops by **$`71.34\%`$** ($`115.61 \to 33.13`$).
+   * Power MSE drops by **$`92.18\%`$** ($`0.8364 \to 0.0654`$).
+   * Failure F1 jumps by **$`+0.157`$** ($`0.540 \to 0.697`$), detecting 432 high-risk units across all 12 calendar regimes.
+   * Sleeper Churn F1 jumps by **$`+0.249`$** ($`0.397 \to 0.646`$), eliminating 240 false-positive churn flags.
    * Delivers **₹2.27 Cr Net Operating Profit** at a **7.764x mean / 7.676x aggregate Cost-Efficiency Ratio** (+22.64% savings over reactive baseline).
 
 

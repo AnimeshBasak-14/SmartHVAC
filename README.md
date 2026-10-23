@@ -22,7 +22,7 @@ The system is accelerated via **NVIDIA Tesla V100 GPU (FP16 Mixed Precision)**, 
 | :--- | :--- |
 | **[System Architecture & Implementation](docs/ARCHITECTURE_AND_IMPLEMENTATION.md)** | Mathematical formulation, 10-stage ML Lifecycle mapping, `HeteroConv` + `SAGEConv` layer design, V100 AMP FP16 acceleration, and divergence self-healing. |
 | **[GML Foundations: What, Why, How & Where](docs/GML_FOUNDATIONS_WHAT_WHY_HOW_WHERE.md)** | Conceptual foundations of Graph Machine Learning, comparison against Tabular ML (XGBoost/RF), relational inductive bias, and enterprise deployment areas. |
-| **[Dataset Guide: What, Why, How & Where](docs/DATASET_GUIDE_WHAT_WHY_HOW_WHERE.md)** | In-depth schemas of the 4 entity tables and 3 edge tables, seasonal cyclical encoding ($\sin/\cos$), normalization protocols, and real-world industrial data mapping. |
+| **[Dataset Guide: What, Why, How & Where](docs/DATASET_GUIDE_WHAT_WHY_HOW_WHERE.md)** | In-depth schemas of the 4 entity tables and 3 edge tables, seasonal cyclical encoding ($`\sin/\cos`$), normalization protocols, and real-world industrial data mapping. |
 | **[Modular Codebase Reference](hvac_gml_project/README.md)** | Component-by-component walkthrough of all 10 source code files, configurations, test suites, and launch scripts. |
 
 ---
@@ -36,7 +36,7 @@ The project implements the complete 10-stage Machine Learning Lifecycle, detaile
 2. **[02. Data Collection](docs/ml_lifecycle/02_Data_Collection.md)**: UCI AI4I 2020 (601), UCI Online Retail II (502), Kaggle HVAC Power (`felixpradoh`).
 3. **[03. Data Preprocessing](docs/ml_lifecycle/03_Data_Cleaning_and_Preprocessing.md)**: Cancellation filtering, rotational power derivation, graph bipartite sanitization.
 4. **[04. Exploratory Analysis (EDA)](docs/ml_lifecycle/04_Exploratory_Data_Analysis.md)**: 12 seasonal climate regimes, failure correlation analysis, customer RFM distributions.
-5. **[05. Feature Engineering](docs/ml_lifecycle/05_Feature_Engineering_and_Selection.md)**: Continuous cyclical month encoding ($\sin/\cos$), 8-dimensional dense node features.
+5. **[05. Feature Engineering](docs/ml_lifecycle/05_Feature_Engineering_and_Selection.md)**: Continuous cyclical month encoding ($`\sin/\cos`$), 8-dimensional dense node features.
 6. **[06. Model Selection](docs/ml_lifecycle/06_Model_Selection.md)**: Multi-task `HeteroConv` architecture with bipartite `SAGEConv` and link prediction.
 7. **[07. Model Training](docs/ml_lifecycle/07_Model_Training.md)**: Training on NVIDIA Tesla V100 GPU (`10.13.1.7`) with FP16 AMP mixed precision.
 8. **[08. Model Evaluation & Tuning](docs/ml_lifecycle/08_Model_Evaluation_and_Tuning.md)**: **Fine-tuning audit results**: -65.85% Dossier Loss, +0.157 Failure F1, +0.249 Churn F1.

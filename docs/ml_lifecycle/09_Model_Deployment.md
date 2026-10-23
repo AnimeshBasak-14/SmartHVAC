@@ -37,9 +37,9 @@ flowchart TD
 ### Tier 1: Interactive Streamlit Executive Command Center
 * **Files**: `app.py` (root entrypoint) and `hvac_gml_project/dashboard_app.py`
 * **Features**:
-  * **Interactive Company Business POV Controls**: Dynamic sidebar inputs for unit energy tariffs (₹/kWh), emergency repair penalty multipliers ($1.5\text{x} - 4.0\text{x}$), discount campaign costs, and monthly inventory holding charges.
+  * **Interactive Company Business POV Controls**: Dynamic sidebar inputs for unit energy tariffs (₹/kWh), emergency repair penalty multipliers ($`1.5\text{x} - 4.0\text{x}`$), discount campaign costs, and monthly inventory holding charges.
   * **In-Memory Failsafe PyVis Topology**: Replaced filesystem write dependencies with in-memory HTML generation (`net.generate_html()`) to eliminate Streamlit Cloud disk permission crashes and blank screen issues.
-  * **12-Month Operational Sliders**: Interactive monthly regime selector ($m = 1 \dots 12$) dynamically rendering geographic demand maps, high-risk flagged equipment lists, and sleeper customer tables.
+  * **12-Month Operational Sliders**: Interactive monthly regime selector ($`m = 1 \dots 12`$) dynamically rendering geographic demand maps, high-risk flagged equipment lists, and sleeper customer tables.
   * **Cloud Deployment URL**: `https://smarthvac-advisor.streamlit.app/`
 
 ### Tier 2: Enterprise Neo4j Graph Synchronization
