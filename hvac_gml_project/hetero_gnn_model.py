@@ -1,7 +1,7 @@
 """
 hetero_gnn_model.py
 Multi-Task Spatio-Temporal Heterogeneous Graph Neural Network (PyTorch Geometric).
-Optimized for NVIDIA Tesla V100 with Mixed Precision (FP16) support.
+Works with FP16 mixed precision on GPU (we trained on a Tesla V100).
 """
 import torch
 import torch.nn as nn

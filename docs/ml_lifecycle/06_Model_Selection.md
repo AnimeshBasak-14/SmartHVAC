@@ -13,9 +13,9 @@ Why is a Heterogeneous Graph Neural Network (Hetero-GNN) the optimal architectur
 
 | Model Paradigm | Cross-Entity Relational Awareness | Typed Heterogeneous Nodes & Edges | Spatio-Temporal Propagation | Multi-Task Shared Representation | Verdict |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **Tabular Models**<br>*(XGBoost, LightGBM, CatBoost)* | ❌ **None**<br>Assumes I.I.D. rows | ❌ **None**<br>Requires flat denormalization | ❌ **Weak**<br>Blind to topological hops | ❌ **None**<br>Requires 4 siloed models | **REJECTED**: Cannot model failure propagation or customer-device dependencies. |
-| **Homogeneous GNN**<br>*(Vanilla GCN, GAT)* | ⚠️ **Partial**<br>Tolerates graphs | ❌ **Failed**<br>Forces identical feature spaces on all nodes | ⚠️ **Moderate**<br>Conflates relationship types | ⚠️ **Limited**<br>Prone to oversmoothing | **REJECTED**: Conflates resident attributes ($`R, F, M`$) with part costs and device power. |
-| **Heterogeneous GNN**<br>*(HeteroConv + SAGEConv)* | ✅ **Native**<br>Multi-hop relational paths | ✅ **Native**<br>Dedicated weights per edge relation $`r \in \mathcal{R}`$ | ✅ **Strong**<br>Explicit cyclical features + message passing | ✅ **Native**<br>Shared heterogeneous graph embeddings | **SELECTED**: Naturally captures multi-relational physical and business topologies. |
+| **Tabular Models**<br>*(XGBoost, LightGBM, CatBoost)* | **None**<br>Assumes I.I.D. rows | **None**<br>Requires flat denormalization | **Weak**<br>Blind to topological hops | **None**<br>Requires 4 siloed models | **REJECTED**: Cannot model failure propagation or customer-device dependencies. |
+| **Homogeneous GNN**<br>*(Vanilla GCN, GAT)* | **Partial**<br>Tolerates graphs | **Failed**<br>Forces identical feature spaces on all nodes | **Moderate**<br>Conflates relationship types | **Limited**<br>Prone to oversmoothing | **REJECTED**: Conflates resident attributes ($`R, F, M`$) with part costs and device power. |
+| **Heterogeneous GNN**<br>*(HeteroConv + SAGEConv)* | **Native**<br>Multi-hop relational paths | **Native**<br>Dedicated weights per edge relation $`r \in \mathcal{R}`$ | **Strong**<br>Explicit cyclical features + message passing | **Native**<br>Shared heterogeneous graph embeddings | **SELECTED**: Naturally captures multi-relational physical and business topologies. |
 
 ---
 

@@ -1,8 +1,8 @@
 """
 business_financial_engine.py
-Enterprise Financial KPI & Business Simulation Engine for HVAC & Smart Appliance GML.
-Translates GNN Model Predictions (Demand, Failure Risk, Churn, Inventory) into
-an Executive P&L Statement with fully configurable company business cost drivers.
+Turns the GNN outputs (demand, failure risk, churn, spare parts) into a monthly
+profit-and-loss estimate. Prices and costs come from CompanyBusinessInputs and can
+be changed from the dashboard.
 """
 from dataclasses import dataclass, field
 import numpy as np
@@ -12,8 +12,8 @@ from config import Config
 @dataclass
 class CompanyBusinessInputs:
     """
-    Configurable Business Inputs from the Enterprise / Corporate POV.
-    Allows CFO / Operations leaders to parameterize tariffs, margins, costs, and penalties.
+    Prices, margins, costs and penalties used for the financial estimate.
+    The defaults are our own assumptions for an Indian HVAC service company.
     """
     # 1. Service Pricing & Revenue Inputs (INR)
     base_metro_ticket_cooling: float = 2400.0   # Average HVAC service ticket price in Metro
@@ -50,7 +50,7 @@ class BusinessFinancialEngine:
         business_inputs: CompanyBusinessInputs = None
     ) -> dict:
         """
-        Calculates audited monthly financials based on GNN predictions and company business parameters.
+        Monthly revenue, cost and profit from the GNN predictions and the business inputs.
         """
         if business_inputs is None:
             business_inputs = CompanyBusinessInputs()
@@ -142,7 +142,7 @@ class BusinessFinancialEngine:
         )
 
         # =========================================================
-        # 3. EXECUTIVE KPI METRICS
+        # 3. SUMMARY METRICS
         # =========================================================
         net_profit = total_revenue - total_expenditure
         profit_margin_pct = (net_profit / max(total_revenue, 1.0)) * 100.0
@@ -176,7 +176,7 @@ class BusinessFinancialEngine:
             "campaign_cost": round(campaign_cost, 2),
             "expenditure_inr": round(total_expenditure, 2),
             "baseline_expenditure_inr": round(baseline_unoptimized_expenditure, 2),
-            # Executive KPIs
+            # Summary metrics
             "net_profit_inr": round(net_profit, 2),
             "profit_margin_pct": round(profit_margin_pct, 2),
             "cost_efficiency_ratio": round(cost_efficiency_ratio, 3),

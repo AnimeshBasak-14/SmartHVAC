@@ -1,14 +1,13 @@
 """
 benchmark_baselines.py
-================================================================================
-Empirical Baseline Benchmarking Suite for SmartHVAC GML:
-1. Tabular Machine Learning: Gradient Boosted Decision Trees (XGBoost)
-2. Homogeneous GNN: Vanilla Graph Convolutional Network (GCNConv)
-3. Homogeneous GNN: Vanilla Graph Attention Network (GATConv)
-4. Heterogeneous GNN (Selected): Multi-Task Hetero-GNN (HeteroConv + SAGEConv)
 
-Platform: NVIDIA Tesla V100S-PCIE-32GB Server (10.13.1.7) / Host Fallback
-================================================================================
+Compares our model with three simpler baselines on the same 12 monthly graphs:
+1. XGBoost on flat (tabular) features
+2. Plain GCN (GCNConv), which treats every node as the same type
+3. Plain GAT (GATConv), same idea with attention
+4. Our multi-task hetero-GNN (HeteroConv + SAGEConv)
+
+Runs on the lab server's Tesla V100S (10.13.1.7), or on CPU if there is no GPU.
 """
 
 import os
@@ -582,7 +581,7 @@ def run_benchmark():
     # COMPARISON REPORT GENERATION
     # ==========================================================================
     print("\n" + "="*80)
-    print(" EMPIRICAL MODEL SELECTION BENCHMARK DOSSIER")
+    print(" BASELINE COMPARISON")
     print("="*80)
     df_results = pd.DataFrame(results).T
     print(df_results[[

@@ -1,90 +1,83 @@
-# HVAC & Smart Appliance Heterogeneous Graph Machine Learning (GML) System
+# SmartHVAC: graph machine learning for an HVAC service company
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/)
-[![Hardware](https://img.shields.io/badge/Hardware-NVIDIA%20Tesla%20V100%20(32GB)-76B900?logo=nvidia)](https://www.nvidia.com)
-[![Framework](https://img.shields.io/badge/PyTorch%20Geometric-HeteroGNN-EE4C2C?logo=pytorch)](https://pytorch-geometric.readthedocs.io/)
-[![Database](https://img.shields.io/badge/Graph%20DB-Neo4j%20Bolt-008CC1?logo=neo4j)](https://neo4j.com)
+CSC-505 group project. We model an HVAC and home-appliance service business as a graph
+(locations, residents, devices and spare parts) and train one heterogeneous graph neural
+network (GNN) to handle four tasks at once:
 
-## Executive Overview
-This repository contains the end-to-end production implementation of an enterprise-grade **Heterogeneous Graph Neural Network (GNN)** pipeline designed for smart HVAC systems and connected residential appliances. It simultaneously optimizes:
-1. **Spatio-Temporal Service Demand Forecasting** (Metropolitan cooling vs. Rural village heating).
-2. **Preventive Device Health & Failure Triage** (Compressor and heating element failure prediction).
-3. **Customer Retention & "Sleeper" Churn Reactivation** (Counter-seasonal cross-sell link prediction).
-4. **Supply Chain & Spare Parts Inventory Optimization** (Stockout risk and warehouse holding cost balancing).
+1. Service demand per location for each month (metro areas need more cooling, villages more heating).
+2. Power draw and failure risk per device, so technicians can visit before a breakdown.
+3. Customers who have stopped using the service ("sleepers"), and which off-season product to offer them.
+4. How many of each spare part to keep in stock.
 
-The system is accelerated via **NVIDIA Tesla V100 GPU (FP16 Mixed Precision)**, integrates with **Neo4j Graph Database**, and serves an interactive **Streamlit Command Center**.
+The model is built with PyTorch Geometric (`HeteroConv` with `SAGEConv` layers). We trained it on
+the lab server's Tesla V100 GPU. A Streamlit dashboard shows the results, and a Neo4j
+connector is included but optional.
 
----
+## Documentation
 
-## 📚 Comprehensive Documentation Suite
-
-| Document | Core Topics Covered |
+| Document | What it covers |
 | :--- | :--- |
-| **[System Architecture & Implementation](docs/ARCHITECTURE_AND_IMPLEMENTATION.md)** | Mathematical formulation, 10-stage ML Lifecycle mapping, `HeteroConv` + `SAGEConv` layer design, V100 AMP FP16 acceleration, and divergence self-healing. |
-| **[GML Foundations: What, Why, How & Where](docs/GML_FOUNDATIONS_WHAT_WHY_HOW_WHERE.md)** | Conceptual foundations of Graph Machine Learning, comparison against Tabular ML (XGBoost/RF), relational inductive bias, and enterprise deployment areas. |
-| **[Dataset Guide: What, Why, How & Where](docs/DATASET_GUIDE_WHAT_WHY_HOW_WHERE.md)** | In-depth schemas of the 4 entity tables and 3 edge tables, seasonal cyclical encoding ($`\sin/\cos`$), normalization protocols, and real-world industrial data mapping. |
-| **[Modular Codebase Reference](hvac_gml_project/README.md)** | Component-by-component walkthrough of all 10 source code files, configurations, test suites, and launch scripts. |
+| [Architecture and implementation](docs/ARCHITECTURE_AND_IMPLEMENTATION.md) | Problem formulation, model layers, mixed-precision training, how we handle a diverging loss |
+| [Graph ML basics](docs/GML_FOUNDATIONS_WHAT_WHY_HOW_WHERE.md) | What graph ML is and when it beats tabular models such as XGBoost or random forests |
+| [Dataset guide](docs/DATASET_GUIDE_WHAT_WHY_HOW_WHERE.md) | The 4 node tables and 3 edge tables, month encoding ($`\sin/\cos`$), normalisation |
+| [Code reference](hvac_gml_project/README.md) | What each source file does |
+| [Q&A](docs/q&a.md) | Questions we expect in the viva |
 
----
+## ML lifecycle notes
 
-## 🔄 Machine Learning Lifecycle Documentation Suite
+One file per stage, in [docs/ml_lifecycle/](docs/ml_lifecycle/README.md):
 
-The project implements the complete 10-stage Machine Learning Lifecycle, detailed in dedicated technical documentation files:
+1. [Problem definition](docs/ml_lifecycle/01_Problem_Definition.md): the four tasks and how seasons change them.
+2. [Data collection](docs/ml_lifecycle/02_Data_Collection.md): UCI AI4I 2020 (id 601), UCI Online Retail II (id 502), Kaggle HVAC power consumption (felixpradoh).
+3. [Cleaning and preprocessing](docs/ml_lifecycle/03_Data_Cleaning_and_Preprocessing.md): removing cancelled orders, deriving power from torque and speed, checking the graph edges.
+4. [EDA](docs/ml_lifecycle/04_Exploratory_Data_Analysis.md): the 12 monthly climate settings, failure correlations, customer RFM distributions.
+5. [Feature engineering](docs/ml_lifecycle/05_Feature_Engineering_and_Selection.md): sin/cos month encoding and 8 features per node.
+6. [Model selection](docs/ml_lifecycle/06_Model_Selection.md): why a heterogeneous GNN, compared with XGBoost, GCN and GAT baselines.
+7. [Training](docs/ml_lifecycle/07_Model_Training.md): V100 server (`10.13.1.7`), FP16 mixed precision.
+8. [Evaluation and tuning](docs/ml_lifecycle/08_Model_Evaluation_and_Tuning.md): fine-tuning cut the total loss by 65.85% and raised failure F1 by 0.157 and churn F1 by 0.249.
+9. [Deployment](docs/ml_lifecycle/09_Model_Deployment.md): Streamlit Cloud, Neo4j.
+10. [Monitoring](docs/ml_lifecycle/10_Model_Monitoring_and_Maintenance.md): training logs, and what to watch when the climate or customer behaviour changes.
 
-* 📖 **[ML Lifecycle Master Overview](docs/ml_lifecycle/README.md)**
-1. **[01. Problem Definition](docs/ml_lifecycle/01_Problem_Definition.md)**: 4 multi-task pillars, seasonal climate shifts, mathematical graph formulation.
-2. **[02. Data Collection](docs/ml_lifecycle/02_Data_Collection.md)**: UCI AI4I 2020 (601), UCI Online Retail II (502), Kaggle HVAC Power (`felixpradoh`).
-3. **[03. Data Preprocessing](docs/ml_lifecycle/03_Data_Cleaning_and_Preprocessing.md)**: Cancellation filtering, rotational power derivation, graph bipartite sanitization.
-4. **[04. Exploratory Analysis (EDA)](docs/ml_lifecycle/04_Exploratory_Data_Analysis.md)**: 12 seasonal climate regimes, failure correlation analysis, customer RFM distributions.
-5. **[05. Feature Engineering](docs/ml_lifecycle/05_Feature_Engineering_and_Selection.md)**: Continuous cyclical month encoding ($`\sin/\cos`$), 8-dimensional dense node features.
-6. **[06. Model Selection](docs/ml_lifecycle/06_Model_Selection.md)**: Multi-task `HeteroConv` architecture with bipartite `SAGEConv` and link prediction.
-7. **[07. Model Training](docs/ml_lifecycle/07_Model_Training.md)**: Training on NVIDIA Tesla V100 GPU (`10.13.1.7`) with FP16 AMP mixed precision.
-8. **[08. Model Evaluation & Tuning](docs/ml_lifecycle/08_Model_Evaluation_and_Tuning.md)**: **Fine-tuning audit results**: -65.85% Dossier Loss, +0.157 Failure F1, +0.249 Churn F1.
-9. **[09. Model Deployment](docs/ml_lifecycle/09_Model_Deployment.md)**: Streamlit Cloud, Neo4j.
-10. **[10. Model Monitoring & Maintenance](docs/ml_lifecycle/10_Model_Monitoring_and_Maintenance.md)**: Continuous telemetry logging, climate covariate drift, concept drift protocols.
+## Business results (after fine-tuning)
 
----
+These numbers come from `hvac_gml_project/artifacts/fine_tuned_financial_metrics.csv`. They are a
+simulation: the model's predictions are combined with the prices and costs we assumed in
+`business_financial_engine.py`, so they show what the model could be worth, not real company accounts.
 
-## ⚡ Audited Business & Financial KPIs (Fine-Tuned on Tesla V100)
+| Over 12 months | Value |
+| :--- | :--- |
+| Revenue | ₹2,61,01,851.84 (about ₹2.61 crore) |
+| Operating cost | ₹34,00,492.40 (about ₹34.0 lakh) |
+| Net profit | ₹2,27,01,359.44 (about ₹2.27 crore); profit is positive in every month |
+| Revenue / cost ratio | 7.76 (mean of the monthly ratios), 7.68 (total revenue / total cost) |
+| Cost saved by preventive instead of reactive repairs | 22.6% on average, 28.4% in the best month |
 
-Calibrated across all 12 calendar months on the Tesla V100 GPU, the pipeline demonstrates strictly positive net profit and dramatic operational savings:
+## Running it
 
-* **Annual Gross Revenue**: **₹2,61,01,851.84** (~₹2.61 Crore INR)
-* **Annual Operating Expenditure (OPEX)**: **₹34,00,492.40** (~₹34.00 Lakh INR — 100% Match)
-* **Annual Net Profit**: **₹2,27,01,359.44** (~₹2.27 Crore INR — 100% positive in every month)
-* **Mean Cost-Efficiency Ratio**: **7.764x mean / 7.676x aggregate** (Revenue generates ~7.7x operating cost)
-* **Proactive Breakdown Savings Gain**: **+22.64% avg (Peak: +28.4%)** (Avoidance of emergency breakdowns)
+### Streamlit Cloud
+1. Push the repository to GitHub (ours is `https://github.com/AnimeshBasak-14/SmartHVAC.git`).
+2. On [share.streamlit.io](https://share.streamlit.io/), create a new app from that repository, branch `main`.
+3. Set the main file to `app.py` and deploy.
 
----
-
-## 🚀 Quickstart: Local Execution & Streamlit Cloud
-
-### Option A: Deploying on Streamlit Cloud (One-Click)
-1. Fork or push this repository to GitHub: `https://github.com/AnimeshBasak-14/SmartHVAC.git`
-2. Open [share.streamlit.io](https://share.streamlit.io/) and create a **New app**.
-3. Select repository: `AnimeshBasak-14/SmartHVAC`, Branch: `main`.
-4. Main file path: `app.py`.
-5. Click **Deploy!**
-
-### Option B: Running Locally (Windows / Linux)
+### Locally (Windows or Linux)
 ```bash
-# 1. Clone repository
 git clone https://github.com/AnimeshBasak-14/SmartHVAC.git
 cd SmartHVAC
-
-# 2. Install dependencies
 pip install -r requirements.txt
-
-# 3. Run test suite
 python hvac_gml_project/tests/test_pipeline.py
-
-# 4. Launch Command Center
 streamlit run app.py
 ```
 
-### Option C: Training on NVIDIA Tesla V100 Lab Server
+### Training on the lab server (Tesla V100)
 ```bash
 cd hvac_gml_project
-python train_and_monitor.py
+python train_and_monitor.py      # first training run
+python fine_tune_v100.py         # fine-tuning
+python benchmark_baselines.py    # XGBoost / GCN / GAT comparison
 streamlit run dashboard_app.py --server.port 8501 --server.headless true
 ```
+
+## Team
+
+Animesh Basak (26911001), Dhruv Aggarwal (26911004), Ankit Kumar (26911002),
+Saurav Kumar Boro (26535026), Kriti Vajpayee.

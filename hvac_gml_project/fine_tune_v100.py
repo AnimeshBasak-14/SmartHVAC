@@ -1,27 +1,26 @@
 """
 fine_tune_v100.py
-================================================================================
-Enterprise-Grade Fine-Tuning & Calibration Pipeline for SmartHVAC Hetero-GNN
-Platform: NVIDIA Tesla V100S-PCIE-32GB (CUDA 12.4 + PyTorch AMP FP16)
 
-Solves the 3 core audit bottlenecks identified in the Argos Review:
-1. Multi-Task Gradient Dominance:
-   Replaces unweighted MSE (O(100)) vs BCE (O(0.5)) with Learnable Homoscedastic
-   Uncertainty Weighting (Kendall et al., CVPR 2018) + SmoothL1 (Huber) Loss.
-2. Under-Calibration in Non-Peak Regimes:
-   Calibrates failure risk & sleeper churn using pos_weight and real empirical datasets:
-     - Dataset 4: UCI AI4I 2020 (HDF: Heat Dissipation Failure, PWF: Power Failure)
-     - Dataset 1: UCI Online Retail II (Hamim-Susmit RFM + CLV feature engineering)
-     - Dataset 3: Kaggle HVAC Power Consumption (felixpradoh) monthly thermal curves
-3. Late-Epoch Oscillation & Divergence:
-   Replaces fixed LR with CosineAnnealingLR + Gradient Clipping (max_norm=1.0).
+Fine-tunes the pre-trained hetero-GNN. Run on the lab server (Tesla V100S, CUDA 12.4,
+FP16 AMP); it also runs on CPU, just slower.
 
-Outputs:
+It fixes three problems we saw after the first training run:
+1. The regression losses (MSE, around 100) were much larger than the classification
+   losses (BCE, around 0.5), so the classification heads barely learned. We now weight
+   each task with a learned uncertainty term (Kendall et al., CVPR 2018) and use
+   SmoothL1 (Huber) loss for the regression heads.
+2. Failure and churn were under-predicted outside the peak months. We use pos_weight
+   and calibrate against real data:
+     - UCI AI4I 2020 (HDF = heat dissipation failure, PWF = power failure)
+     - UCI Online Retail II (RFM and CLV features)
+     - Kaggle HVAC power consumption (felixpradoh), monthly load curves
+3. The loss oscillated late in training. We switched from a fixed learning rate to
+   CosineAnnealingLR with gradient clipping (max_norm=1.0).
+
+Writes:
   - artifacts/fine_tuned_hetero_gnn_v100.pt
   - artifacts/fine_tuned_financial_metrics.csv
-  - artifacts/fine_tune_telemetry.json
-  - Real before vs. after comparison dossier
-================================================================================
+  - artifacts/fine_tune_telemetry.json (metrics before and after fine-tuning)
 """
 
 import os
@@ -141,7 +140,7 @@ def load_empirical_fine_tuning_tables(builder: HVACGraphDatasetBuilder):
 
 def evaluate_model_metrics(model, monthly_graphs, tables, device):
     """
-    Computes comprehensive task metrics across all 12 months:
+    Metrics for every task, over all 12 months:
       - Demand: MSE, MAE
       - Power: MSE, MAE
       - Equipment Failure: BCE, Precision, Recall, F1, Flagged Count
@@ -216,7 +215,7 @@ def evaluate_model_metrics(model, monthly_graphs, tables, device):
     metrics["sleeper_f1"] = round(float(f1_churn), 4)
     metrics["sleeper_flagged"] = int(np.sum(all_churn_pred))
 
-    # Dossier-equivalent total loss (for comparison with baseline best_loss 235.23)
+    # Sum of all task losses, comparable with the first run's best_loss of 235.23
     metrics["total_dossier_loss"] = round(
         metrics["demand_mse"] + (metrics["power_mse"] + metrics["failure_bce"]) +
         metrics["sleeper_bce"] + metrics["inventory_mse"], 2
@@ -236,7 +235,7 @@ def run_fine_tuning():
     use_amp = (device_str.startswith("cuda") and Config.USE_AMP_FP16)
 
     print(f"[HARDWARE] Active Device: {device} | Device Name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'Host CPU'}")
-    print(f"[PRECISION] Mixed-Precision FP16 AMP: {'ENABLED (Tesla Tensor Cores)' if use_amp else 'DISABLED'}")
+    print(f"[PRECISION] Mixed-Precision FP16 AMP: {'on' if use_amp else 'DISABLED'}")
 
     torch.manual_seed(Config.SEED)
     np.random.seed(Config.SEED)
@@ -274,7 +273,7 @@ def run_fine_tuning():
 
         monthly_graphs[m] = g_data.to(device)
 
-    print(f"[GRAPH PIPELINE] 12 monthly graphs successfully generated and transferred to {device}.")
+    print(f"[GRAPH PIPELINE] Built 12 monthly graphs on {device}.")
 
     # 3. Model Instantiation & Checkpoint Loading
     model = MultiTaskHVACHeteroGNN(
@@ -294,9 +293,9 @@ def run_fine_tuning():
             print(f"[CHECKPOINT WARNING] Could not load checkpoint: {e}. Starting fresh.")
 
     # 4. Baseline Before Evaluation
-    print("\n[BENCHMARK] Evaluating PRE-FINE-TUNING Baseline Performance...")
+    print("\n[BEFORE] Scoring the model before fine-tuning...")
     before_metrics = evaluate_model_metrics(model, monthly_graphs, tables, device)
-    print(f"  -> Baseline Dossier Loss:  {before_metrics['total_dossier_loss']:.2f}")
+    print(f"  -> Total loss (before):   {before_metrics['total_dossier_loss']:.2f}")
     print(f"  -> Baseline Demand MSE:    {before_metrics['demand_mse']:.2f} (MAE: {before_metrics['demand_mae']:.2f})")
     print(f"  -> Baseline Power MSE:     {before_metrics['power_mse']:.3f} (MAE: {before_metrics['power_mae']:.3f})")
     print(f"  -> Baseline Failure BCE:   {before_metrics['failure_bce']:.3f} | F1: {before_metrics['failure_f1']:.3f} | Flagged: {before_metrics['failure_flagged']}")
@@ -331,7 +330,7 @@ def run_fine_tuning():
     history = []
     start_time = time.time()
 
-    print(f"\n[FINE-TUNING] Commencing 60 Epochs with Homoscedastic Uncertainty Weighting & FP16 AMP...")
+    print(f"\n[FINE-TUNING] 60 epochs, uncertainty-weighted losses, FP16 AMP...")
 
     for epoch in range(1, fine_tune_epochs + 1):
         model.train()
@@ -391,7 +390,7 @@ def run_fine_tuning():
             }
             history.append(log_entry)
 
-            print(f"[Epoch {epoch:02d}/60] Dossier-Loss: {current_eval['total_dossier_loss']:6.2f} | "
+            print(f"[Epoch {epoch:02d}/60] Total loss: {current_eval['total_dossier_loss']:6.2f} | "
                   f"Demand MSE: {current_eval['demand_mse']:5.2f} | Maint F1: {current_eval['failure_f1']:.3f} | "
                   f"Churn F1: {current_eval['sleeper_f1']:.3f} | Inv MSE: {current_eval['inventory_mse']:5.2f} | "
                   f"VRAM: {vram_mb:5.1f}MB")
@@ -402,7 +401,7 @@ def run_fine_tuning():
                 torch.save(model.state_dict(), Config.CHECKPOINT_PATH)
 
     total_time = time.time() - start_time
-    print(f"\n[FINE-TUNING COMPLETE] Finished in {total_time:.1f}s. Best Dossier-Equivalent Loss: {best_eval_loss:.2f}")
+    print(f"\n[FINE-TUNING COMPLETE] Took {total_time:.1f}s. Best total loss: {best_eval_loss:.2f}")
 
     # 6. Post Fine-Tuning Evaluation
     model.load_state_dict(torch.load(fine_tune_checkpoint_path, map_location=device))
@@ -430,7 +429,7 @@ def run_fine_tuning():
     mean_ratio = float(df_fin["cost_efficiency_ratio"].mean())
     mean_gain_pct = float(df_fin["cost_efficiency_gain_pct"].mean())
 
-    # 8. Save Fine-Tune Telemetry & Audit Dossier
+    # 8. Save metrics from before and after fine-tuning
     telemetry_payload = {
         "status": "FINE_TUNING_COMPLETED",
         "device": str(device),
@@ -466,13 +465,13 @@ def run_fine_tuning():
     with open(Config.TELEMETRY_JSON, "w") as f:
         json.dump(telemetry_payload, f, indent=2)
 
-    # 9. Print Executive Summary Table
+    # 9. Print a before/after table
     print("\n" + "=" * 80)
-    print(" EXECUTIVE FINE-TUNING AUDIT DOSSIER: BEFORE VS. AFTER CALIBRATION")
+    print(" FINE-TUNING RESULTS: BEFORE VS AFTER")
     print("=" * 80)
     print(f"{'Metric / Objective Pillar':<35} | {'Before Fine-Tune':<18} | {'After Fine-Tune':<18} | {'Delta':<12}")
     print("-" * 80)
-    print(f"{'Overall Dossier Loss':<35} | {before_metrics['total_dossier_loss']:<18.2f} | {after_metrics['total_dossier_loss']:<18.2f} | -{telemetry_payload['improvement_pct']['dossier_loss_reduction_pct']:.1f}%")
+    print(f"{'Total loss (all tasks)':<35} | {before_metrics['total_dossier_loss']:<18.2f} | {after_metrics['total_dossier_loss']:<18.2f} | -{telemetry_payload['improvement_pct']['dossier_loss_reduction_pct']:.1f}%")
     print(f"{'Pillar 1: Demand MSE (L_demand)':<35} | {before_metrics['demand_mse']:<18.2f} | {after_metrics['demand_mse']:<18.2f} | -{telemetry_payload['improvement_pct']['demand_mse_reduction_pct']:.1f}%")
     print(f"{'Pillar 2: Power MSE (L_power)':<35} | {before_metrics['power_mse']:<18.4f} | {after_metrics['power_mse']:<18.4f} | {after_metrics['power_mse'] - before_metrics['power_mse']:+.4f}")
     print(f"{'Pillar 2: Failure F1 (AI4I HDF/PWF)':<35} | {before_metrics['failure_f1']:<18.3f} | {after_metrics['failure_f1']:<18.3f} | {telemetry_payload['improvement_pct']['failure_f1_gain']:+.3f}")

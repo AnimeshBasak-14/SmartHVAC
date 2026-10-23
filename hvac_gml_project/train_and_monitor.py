@@ -96,10 +96,10 @@ def train_pipeline(learning_rate=None, max_retries=1):
             loss_components["inventory"] += float(l_inv.item())
 
         if diverged:
-            print(f"[WARNING] Loss diverged (NaN/Inf) at epoch {epoch} with LR={lr}. Triggering self-healing recovery...")
+            print(f"[WARNING] Loss diverged (NaN/Inf) at epoch {epoch} with LR={lr}. Retrying with a lower learning rate...")
             if max_retries > 0:
                 reduced_lr = lr * 0.5
-                print(f"[SELF-HEAL] Automatically reducing LEARNING_RATE to {reduced_lr} and restarting training...")
+                print(f"[RETRY] Learning rate halved to {reduced_lr}; restarting training.")
                 return train_pipeline(learning_rate=reduced_lr, max_retries=max_retries - 1)
             else:
                 raise RuntimeError("Training diverged and max retries exceeded.")
