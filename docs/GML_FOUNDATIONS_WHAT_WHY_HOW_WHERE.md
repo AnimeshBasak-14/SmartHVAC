@@ -18,16 +18,19 @@ $$\mathcal{G} = \left(\mathcal{V}, \mathcal{E}, \mathcal{T}_v, \mathcal{T}_e\rig
 * **Edge Types ($\mathcal{T}_e$)**: $\mathcal{T}_e = \{\text{LOCATED\_IN}, \text{HAS\_RESIDENT}, \text{OWNS}, \text{OWNED\_BY}, \text{REQUIRES\_PART}, \text{USED\_IN}\}$
 
 ```mermaid
-graph LR
-    subgraph Heterogeneous Graph Architecture
-        L["📍 Location Node<br>(Micro-climate, Grid)"]
-        R["👤 Resident Node<br>(Tenure, Engagement)"]
-        D["⚡ Device Node<br>(Power, SKU, Hazard)"]
-        P["📦 Inventory Part<br>(Stock, Unit Cost)"]
+flowchart LR
+    subgraph Heterogeneous_Graph_Architecture["Heterogeneous Graph Architecture"]
+        L["Location Node<br>(Micro-climate, Grid)"]
+        R["Resident Node<br>(Tenure, Engagement)"]
+        D["Device Node<br>(Power, SKU, Hazard)"]
+        P["Inventory Part<br>(Stock, Unit Cost)"]
 
-        R <-->|LOCATED_IN / HAS_RESIDENT| L
-        R <-->|OWNS / OWNED_BY| D
-        D <-->|REQUIRES_PART / USED_IN| P
+        R -->|LOCATED_IN| L
+        L -->|HAS_RESIDENT| R
+        R -->|OWNS| D
+        D -->|OWNED_BY| R
+        D -->|REQUIRES_PART| P
+        P -->|USED_IN| D
     end
 ```
 
@@ -65,9 +68,9 @@ sequenceDiagram
     participant Fin as Financial KPI Engine
 
     Raw->>Proj: 8-dim raw vectors (Location, Resident, Device, Part)
-    Proj->>MP: Projected 128-dim latent states h^(0)
+    Proj->>MP: Projected 128-dim latent states h0
     Note over MP: 3 Message Passing Iterations (Neighborhood Aggregation + Skip Connections)
-    MP->>Heads: Enriched contextual embeddings h^(3)
+    MP->>Heads: Enriched contextual embeddings h3
     Heads->>Fin: Predictions (Demand, Power, Failure Risk, Churn, Inventory)
     Fin->>Fin: Audit Revenue, Cost Savings, and Operating Margins
 ```
@@ -98,13 +101,13 @@ $$P(\text{Cross-Sell Adoption}) = \sigma\left(\mathbf{h}_u^T \mathbf{h}_d\right)
 ## 4. WHERE Is GML Applied Across the Enterprise?
 
 ```mermaid
-graph TD
-    GML["⚡ Heterogeneous GNN Engine"]
+flowchart TD
+    GML["Heterogeneous GNN Engine"]
 
-    GML --> FieldOps["🚛 Field Service & Dispatch<br>• Spatio-temporal workload balancing<br>• Metro vs. Village seasonal routing"]
-    GML --> Fleet["⚙️ Preventive Fleet Maintenance<br>• Power anomaly detection<br>• Catastrophic breakdown prevention"]
-    GML --> Marketing["📱 Customer Retention (CRM)<br>• Sleeper customer reactivation<br>• Counter-seasonal cross-sell campaigns"]
-    GML --> SCM["📦 Supply Chain & Inventory<br>• Warehouse parts forecasting<br>• Stockout SLA penalty elimination"]
+    GML --> FieldOps["Field Service and Dispatch<br>- Spatio-temporal workload balancing<br>- Metro vs. Village seasonal routing"]
+    GML --> Fleet["Preventive Fleet Maintenance<br>- Power anomaly detection<br>- Catastrophic breakdown prevention"]
+    GML --> Marketing["Customer Retention (CRM)<br>- Sleeper customer reactivation<br>- Counter-seasonal cross-sell campaigns"]
+    GML --> SCM["Supply Chain and Inventory<br>- Warehouse parts forecasting<br>- Stockout SLA penalty elimination"]
 ```
 
 ### 1. Spatio-Temporal Field Service Dispatch
@@ -134,14 +137,14 @@ $$\nabla_{\mathbf{W}} \mathcal{L}_{\text{total}} = \nabla_{\mathbf{W}} \mathcal{
 When regression targets (Demand and Inventory) have outputs in the range $[20, 750]$, their raw squared error ($\text{MSE} \approx 100 - 300$) produces gradients orders of magnitude larger than classification heads ($\text{BCE} \approx 0.3 - 0.7$). In an uncalibrated network, the GNN weights adapt exclusively to satisfy demand regression, leaving equipment failure and customer churn predictions under-fitted and poorly calibrated.
 
 ```mermaid
-graph TD
-    subgraph Problem [Uncalibrated Joint Loss]
-        L_Reg["Regression Heads (Demand & Inv)<br>Loss: ~100 - 300 (Dominates Gradient)"]
-        L_Cls["Classification Heads (Failure & Churn)<br>Loss: ~0.50 (Starved of Updates)"]
+flowchart TD
+    subgraph Problem["Uncalibrated Joint Loss"]
+        L_Reg["Regression Heads (Demand and Inv)<br>Loss: ~100 - 300 (Dominates Gradient)"]
+        L_Cls["Classification Heads (Failure and Churn)<br>Loss: ~0.50 (Starved of Updates)"]
         G_Shared["Shared HeteroConv Weights<br>(Biased towards Regression)"]
     end
 
-    subgraph Solution [Kendall Homoscedastic Uncertainty Weighting]
+    subgraph Solution["Kendall Homoscedastic Uncertainty Weighting"]
         Sigma["Learnable Precision Parameters: exp(-s_i)"]
         Huber["SmoothL1 (Huber) Loss (Beta = 4.0)"]
         Balanced["Balanced Multi-Task Updates to Shared GNN Layers"]

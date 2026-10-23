@@ -24,27 +24,27 @@ Why is a Heterogeneous Graph Neural Network (Hetero-GNN) the optimal architectur
 The model is structured around a shared inductive heterogeneous message-passing backbone connected to four specialized output task heads and a link prediction decoder:
 
 ```mermaid
-graph TD
-    subgraph Inputs [Graph Inputs x_dict & edge_index_dict]
+flowchart TD
+    subgraph Inputs["Graph Inputs x_dict and edge_index_dict"]
         In_Loc["Location Features (8)"]
         In_Dev["Device Features (8)"]
         In_Res["Resident Features (8)"]
         In_Part["Part Features (8)"]
     end
 
-    subgraph Backbone [Heterogeneous GNN Backbone]
-        HConv1["HeteroConv Layer 1 (SAGEConv, 8 -> 128) + ReLU + Dropout"]
-        HConv2["HeteroConv Layer 2 (SAGEConv, 128 -> 128) + ReLU + Dropout"]
-        HConv3["HeteroConv Layer 3 (SAGEConv, 128 -> 64) + Residual Projection"]
+    subgraph Backbone["Heterogeneous GNN Backbone"]
+        HConv1["HeteroConv Layer 1 (SAGEConv, 8 to 128) + ReLU + Dropout"]
+        HConv2["HeteroConv Layer 2 (SAGEConv, 128 to 128) + ReLU + Dropout"]
+        HConv3["HeteroConv Layer 3 (SAGEConv, 128 to 64) + Residual Projection"]
     end
 
-    subgraph Heads [Specialized Multi-Task Heads]
-        H_Dem["Head 1: Demand Regressor<br>Linear(64, 1) -> y_demand"]
-        H_Pwr["Head 2a: Power Regressor<br>Linear(64, 1) -> y_power"]
-        H_Fail["Head 2b: Failure Classifier<br>Linear(64, 1) -> failure_logits"]
-        H_Churn["Head 3: Sleeper Churn Classifier<br>Linear(64, 1) -> sleeper_logits"]
-        H_Inv["Head 4: Inventory Forecaster<br>Linear(64, 1) -> y_inventory"]
-        H_Link["Link Predictor<br>DotProduct(h_res, h_dev) -> Cross-Sell Score"]
+    subgraph Heads["Specialized Multi-Task Heads"]
+        H_Dem["Head 1: Demand Regressor<br>Linear(64, 1) to y_demand"]
+        H_Pwr["Head 2a: Power Regressor<br>Linear(64, 1) to y_power"]
+        H_Fail["Head 2b: Failure Classifier<br>Linear(64, 1) to failure_logits"]
+        H_Churn["Head 3: Sleeper Churn Classifier<br>Linear(64, 1) to sleeper_logits"]
+        H_Inv["Head 4: Inventory Forecaster<br>Linear(64, 1) to y_inventory"]
+        H_Link["Link Predictor<br>DotProduct(h_res, h_dev) to Cross-Sell Score"]
     end
 
     Inputs --> HConv1 --> HConv2 --> HConv3

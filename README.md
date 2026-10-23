@@ -40,7 +40,7 @@ The project implements the complete 10-stage Machine Learning Lifecycle, detaile
 6. **[06. Model Selection](docs/ml_lifecycle/06_Model_Selection.md)**: Multi-task `HeteroConv` architecture with bipartite `SAGEConv` and link prediction.
 7. **[07. Model Training](docs/ml_lifecycle/07_Model_Training.md)**: Training on NVIDIA Tesla V100 GPU (`10.13.1.7`) with FP16 AMP mixed precision.
 8. **[08. Model Evaluation & Tuning](docs/ml_lifecycle/08_Model_Evaluation_and_Tuning.md)**: **Fine-tuning audit results**: -65.85% Dossier Loss, +0.157 Failure F1, +0.249 Churn F1.
-9. **[09. Model Deployment](docs/ml_lifecycle/09_Model_Deployment.md)**: Streamlit Cloud, standalone offline browser dashboard (`ARGOS_BROWSER_RESULTS.html`), Neo4j.
+9. **[09. Model Deployment](docs/ml_lifecycle/09_Model_Deployment.md)**: Streamlit Cloud, Neo4j.
 10. **[10. Model Monitoring & Maintenance](docs/ml_lifecycle/10_Model_Monitoring_and_Maintenance.md)**: Continuous telemetry logging, climate covariate drift, concept drift protocols.
 
 ---
@@ -54,7 +54,6 @@ Calibrated across all 12 calendar months on the Tesla V100 GPU, the pipeline dem
 * **Annual Net Profit**: **₹2,27,01,359.44** (~₹2.27 Crore INR — 100% positive in every month)
 * **Mean Cost-Efficiency Ratio**: **7.764x mean / 7.676x aggregate** (Revenue generates ~7.7x operating cost)
 * **Proactive Breakdown Savings Gain**: **+22.64% avg (Peak: +28.4%)** (Avoidance of emergency breakdowns)
-* **Full Audit Dossier**: See **[ARGOS.md](ARGOS.md)** and **[ARGOS_BROWSER_RESULTS.html](ARGOS_BROWSER_RESULTS.html)**.
 
 ---
 

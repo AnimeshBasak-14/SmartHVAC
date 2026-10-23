@@ -17,8 +17,8 @@ $$\theta_m = \frac{2\pi(m - 1)}{12}$$
 $$m_{\sin} = \sin(\theta_m), \quad m_{\cos} = \cos(\theta_m)$$
 
 ```mermaid
-graph LR
-    subgraph Trigonometric_Cycle [Continuous 2D Unit Circle]
+flowchart LR
+    subgraph Trigonometric_Cycle["Continuous 2D Unit Circle"]
         M01["Jan (0.0, 1.0)"] --> M04["Apr (1.0, 0.0)"]
         M04 --> M07["Jul (0.0, -1.0)"]
         M07 --> M10["Oct (-1.0, 0.0)"]

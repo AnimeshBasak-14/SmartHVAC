@@ -11,15 +11,15 @@
 Graph Machine Learning requires capturing multiple domain facets: physical machine operating limits, customer behavioral transactions, macro-environmental climate patterns, and supply chain inventory. To ensure rigor and avoid purely synthetic toy assumptions, our data collection pipeline integrates three canonical benchmark datasets mapped to the graph entities:
 
 ```mermaid
-graph TD
-    subgraph Raw_Benchmark_Datasets [External Benchmark Datasets]
-        D1["UCI AI4I 2020 Predictive Maintenance<br>Archive ID: dataset/601 | 10,000 Records"]
-        D2["UCI Online Retail II<br>Archive ID: dataset/502 | 525,461 Records"]
-        D3["Kaggle HVAC Power Consumption<br>Creator: felixpradoh | 8,760 Hourly Records"]
-        D4["Indian Seasonal Climate & Appliance Data<br>IITK / Flipkart Seasonal AC & Heating"]
+flowchart TD
+    subgraph Raw_Benchmark_Datasets["External Benchmark Datasets"]
+        D1["UCI AI4I 2020 Predictive Maintenance<br>Archive ID: dataset/601 / 10,000 Records"]
+        D2["UCI Online Retail II<br>Archive ID: dataset/502 / 525,461 Records"]
+        D3["Kaggle HVAC Power Consumption<br>Creator: felixpradoh / 8,760 Hourly Records"]
+        D4["Indian Seasonal Climate and Appliance Data<br>IITK / Flipkart Seasonal AC and Heating"]
     end
 
-    subgraph Graph_Nodes [Target Graph Entities]
+    subgraph Graph_Nodes["Target Graph Entities"]
         N_Dev["Device Nodes (180 SKUs)<br>Rated kW, Base Risk, HDF/PWF"]
         N_Res["Resident Nodes (600 Customers)<br>RFM, CLV, App Active"]
         N_Loc["Location Nodes (40 Hubs)<br>Metro vs. Village, Temp, Grid"]

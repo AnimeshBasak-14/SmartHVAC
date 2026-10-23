@@ -5,14 +5,14 @@ This documentation suite details the end-to-end **10-Step Machine Learning Lifec
 ```mermaid
 flowchart TD
     S01["01. Problem Definition"] --> S02["02. Data Collection"]
-    S02 --> S03["03. Data Cleaning & Preprocessing"]
+    S02 --> S03["03. Data Cleaning and Preprocessing"]
     S03 --> S04["04. Exploratory Data Analysis (EDA)"]
-    S04 --> S05["05. Feature Engineering & Selection"]
+    S04 --> S05["05. Feature Engineering and Selection"]
     S05 --> S06["06. Model Selection"]
     S06 --> S07["07. Model Training"]
-    S07 --> S08["08. Model Evaluation & Tuning (COMPLETED)"]
+    S07 --> S08["08. Model Evaluation and Tuning (COMPLETED)"]
     S08 --> S09["09. Model Deployment"]
-    S09 --> S10["10. Model Monitoring & Maintenance"]
+    S09 --> S10["10. Model Monitoring and Maintenance"]
     S10 -.-> S01
 ```
 
@@ -30,7 +30,7 @@ flowchart TD
 | **06** | [**Model Selection**](./06_Model_Selection.md) | Tabular vs. GNN architectural comparison, `MultiTaskHVACHeteroGNN` (`HeteroConv` + `SAGEConv`). | ✅ Complete |
 | **07** | [**Model Training**](./07_Model_Training.md) | NVIDIA Tesla V100S GPU setup, FP16 AMP mixed precision, self-healing divergence protection. | ✅ Complete |
 | **08** | [**Model Evaluation & Tuning**](./08_Model_Evaluation_and_Tuning.md) | **Current fine-tuning status**, Kendall uncertainty weighting, Huber loss, Before vs. After audit benchmarks. | ✅ Complete & Audited |
-| **09** | [**Model Deployment**](./09_Model_Deployment.md) | Streamlit Cloud entrypoint, standalone offline browser dashboard (`ARGOS_BROWSER_RESULTS.html`), Neo4j. | ✅ Complete |
+| **09** | [**Model Deployment**](./09_Model_Deployment.md) | Streamlit Cloud entrypoint, Neo4j. | ✅ Complete |
 | **10** | [**Model Monitoring & Maintenance**](./10_Model_Monitoring_and_Maintenance.md) | Continuous telemetry tracking, climate covariate drift, appliance wear concept drift, schema evolution. | ✅ Complete |
 
 ---

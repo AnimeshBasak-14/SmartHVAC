@@ -12,15 +12,14 @@ plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Helvetica']
 plt.rcParams['axes.edgecolor'] = '#CCCCCC'
 plt.rcParams['axes.linewidth'] = 0.8
 
-OUT_DIR = "visualization"
-DOCS_OUT_DIR = os.path.join("docs", "visualization")
+OUT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(OUT_DIR)
 os.makedirs(OUT_DIR, exist_ok=True)
-os.makedirs(DOCS_OUT_DIR, exist_ok=True)
 
 # -----------------------------------------------------------------------------
 # 01. Copy Existing ML Lifecycle Diagram
 # -----------------------------------------------------------------------------
-src_life = os.path.join("docs", "ml_lifecycle", "ml_lifecycle.png")
+src_life = os.path.join(ROOT_DIR, "docs", "ml_lifecycle", "ml_lifecycle.png")
 dst_life = os.path.join(OUT_DIR, "01_ml_lifecycle_10_stages.png")
 if os.path.exists(src_life):
     shutil.copyfile(src_life, dst_life)
@@ -358,31 +357,10 @@ def create_self_healing_flowchart():
 create_self_healing_flowchart()
 
 # -----------------------------------------------------------------------------
-# 06. Pretrain vs Finetune Loss Trajectory
+# 06-08. Loss trajectory, pillar comparison, financial ledger
+# (produced by generate_report_figures.py, executed on import)
 # -----------------------------------------------------------------------------
-src_loss = os.path.join("docs", "New folder", "figures", "fig2_v100_finetune_loss_curve.png")
-dst_loss = os.path.join(OUT_DIR, "06_pretrain_vs_finetune_loss_trajectory.png")
-if os.path.exists(src_loss):
-    shutil.copyfile(src_loss, dst_loss)
-    print("06_pretrain_vs_finetune_loss_trajectory.png created.")
-
-# -----------------------------------------------------------------------------
-# 07. Pillar Performance Comparison Before vs After
-# -----------------------------------------------------------------------------
-src_comp = os.path.join("docs", "New folder", "figures", "fig3_pillar_metrics_comparison.png")
-dst_comp = os.path.join(OUT_DIR, "07_pillar_performance_comparison_before_after.png")
-if os.path.exists(src_comp):
-    shutil.copyfile(src_comp, dst_comp)
-    print("07_pillar_performance_comparison_before_after.png created.")
-
-# -----------------------------------------------------------------------------
-# 08. 12-Month Audited Financial Ledger
-# -----------------------------------------------------------------------------
-src_fin = os.path.join("docs", "New folder", "figures", "fig4_12month_financial_ledger.png")
-dst_fin = os.path.join(OUT_DIR, "08_12month_audited_financial_ledger.png")
-if os.path.exists(src_fin):
-    shutil.copyfile(src_fin, dst_fin)
-    print("08_12month_audited_financial_ledger.png created.")
+import generate_report_figures  # noqa: F401
 
 # -----------------------------------------------------------------------------
 # 09. Seasonal Cooling & Heating Climate Regimes Curve
@@ -574,13 +552,4 @@ def create_proactive_savings_plot():
 
 create_proactive_savings_plot()
 
-# -----------------------------------------------------------------------------
-# Copy all generated files to docs/visualization as well
-# -----------------------------------------------------------------------------
-for f in os.listdir(OUT_DIR):
-    src = os.path.join(OUT_DIR, f)
-    dst = os.path.join(DOCS_OUT_DIR, f)
-    if os.path.isfile(src):
-        shutil.copyfile(src, dst)
-
-print(f"All visualizations synchronized to both {OUT_DIR}/ and {DOCS_OUT_DIR}/.")
+print(f"All visualizations written to {OUT_DIR}/.")

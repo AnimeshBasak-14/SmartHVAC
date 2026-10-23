@@ -17,9 +17,9 @@ flowchart LR
     P04 --> P05["05. Feature Engineering"]
     P05 --> P06["06. Model Selection"]
     P06 --> P07["07. Model Training (V100)"]
-    P07 --> P08["08. Evaluation & Tuning"]
+    P07 --> P08["08. Evaluation and Tuning"]
     P08 --> P09["09. Deployment (Streamlit)"]
-    P09 --> P10["10. Monitoring & Self-Healing"]
+    P09 --> P10["10. Monitoring and Self-Healing"]
 ```
 
 | Lifecycle Stage | Pipeline Implementation & Code Mapping |
@@ -43,11 +43,11 @@ Unlike homogeneous graphs where all nodes and edges share identical feature sema
 
 ### Graph Topology Diagram
 ```mermaid
-graph TD
-    Resident["👤 Resident (Customer)<br>• App Engagement<br>• Tenure<br>• Sleeper Status"]
-    Location["📍 Location (Metro / Village)<br>• Base Temp<br>• Grid Stability<br>• Servicing Demand"]
-    Device["⚡ Device (HVAC / Kettle)<br>• Rated Power (kW)<br>• Base Failure Risk<br>• Operating Load"]
-    Part["📦 Inventory Part<br>• Current Stock<br>• Unit Cost<br>• Forecasted Demand"]
+flowchart TD
+    Resident["Resident (Customer)<br>- App Engagement<br>- Tenure<br>- Sleeper Status"]
+    Location["Location (Metro / Village)<br>- Base Temp<br>- Grid Stability<br>- Servicing Demand"]
+    Device["Device (HVAC / Kettle)<br>- Rated Power (kW)<br>- Base Failure Risk<br>- Operating Load"]
+    Part["Inventory Part<br>- Current Stock<br>- Unit Cost<br>- Forecasted Demand"]
 
     Resident -- "LOCATED_IN" --> Location
     Location -- "HAS_RESIDENT" --> Resident
@@ -211,5 +211,4 @@ Mean Cost-Efficiency Ratio          | 7.92x              | 7.76x (agg: 7.68x) | 
 * **Calibrated Weights**: `hvac_gml_project/artifacts/fine_tuned_hetero_gnn_v100.pt` (Best loss: $46.80$)
 * **Reconciled Financial Ledger**: `hvac_gml_project/artifacts/fine_tuned_financial_metrics.csv`
 * **Fine-Tuning Telemetry**: `hvac_gml_project/artifacts/fine_tune_telemetry.json`
-* **Executive Audit Dossier**: `ARGOS.md` and `ARGOS_BROWSER_RESULTS.html`
 

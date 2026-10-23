@@ -22,11 +22,11 @@ Traditional reactive maintenance and siloed tabular machine learning models fail
 The system formally unifies four core business and engineering pillars into a single Heterogeneous Graph Neural Network (Hetero-GNN):
 
 ```mermaid
-graph LR
-    subgraph MultiTask_Objectives [4 Core Pillars]
+flowchart LR
+    subgraph MultiTask_Objectives["4 Core Pillars"]
         P1["Pillar 1: Spatio-Temporal Demand<br>(Location Nodes - Regression)"]
-        P2["Pillar 2: Power & Failure Prediction<br>(Device Nodes - Reg + Classif)"]
-        P3["Pillar 3: Sleeper Churn & Cross-Sell<br>(Resident Nodes - Classification)"]
+        P2["Pillar 2: Power and Failure Prediction<br>(Device Nodes - Reg + Classif)"]
+        P3["Pillar 3: Sleeper Churn and Cross-Sell<br>(Resident Nodes - Classification)"]
         P4["Pillar 4: Spare-Parts Inventory<br>(Part Nodes - Poisson/L1 Reg)"]
     end
     HeteroGNN["Heterogeneous GNN Backbone<br>(HeteroConv + SAGEConv)"] --> MultiTask_Objectives

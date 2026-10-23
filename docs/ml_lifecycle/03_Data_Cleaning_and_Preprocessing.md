@@ -13,19 +13,19 @@ Raw industrial telemetry and transactional logs contain missing values, non-line
 
 ```mermaid
 flowchart TD
-    subgraph Raw_Ingestion [Raw Data Sources]
+    subgraph Raw_Ingestion["Raw Data Sources"]
         R1["Online Retail II (525k Rows)"]
         R2["AI4I Telemetry (10k Rows)"]
         R3["Hourly Telemetry (8.7k Rows)"]
     end
 
-    subgraph Cleaning_Steps [Cleaning & Sanitization]
-        C1["Filter Cancellations (Invoice 'C*')<br>Drop Null Customer IDs<br>Drop Non-Positive Quantities & Prices"]
-        C2["Physical Power Derivation<br>Torque * RPM -> Power (kW)<br>Kelvin to Celsius Normalization"]
+    subgraph Cleaning_Steps["Cleaning and Sanitization"]
+        C1["Filter Cancellations (Invoice prefix C)<br>Drop Null Customer IDs<br>Drop Non-Positive Quantities and Prices"]
+        C2["Physical Power Derivation<br>Torque x RPM to Power (kW)<br>Kelvin to Celsius Normalization"]
         C3["Hourly Aggregation<br>Monthly Profiling<br>Clipping Outlier Spikes"]
     end
 
-    subgraph Graph_Validation [Graph Integrity Verification]
+    subgraph Graph_Validation["Graph Integrity Verification"]
         G1["Remove Orphan Nodes"]
         G2["Ensure Bidirectional Inverses"]
         G3["Validate Degree Distribution"]

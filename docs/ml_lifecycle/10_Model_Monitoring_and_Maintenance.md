@@ -21,20 +21,20 @@ Production deployments require persistent tracking of inference latencies, memor
 
 ```mermaid
 flowchart TD
-    subgraph Online_Operations [Live Production Environment]
+    subgraph Online_Operations["Live Production Environment"]
         Sensors["Appliance Sensor Telemetry (kW, Temp, Vibration)"]
-        UserLogs["Resident Mobile App & Transaction Logs"]
-        GridData["Regional Weather & Grid Stability Feeds"]
+        UserLogs["Resident Mobile App and Transaction Logs"]
+        GridData["Regional Weather and Grid Stability Feeds"]
     end
 
-    subgraph Monitor_Engine [Monitoring & Drift Detection]
-        Logger["Telemetry Logger -> fine_tune_telemetry.json"]
+    subgraph Monitor_Engine["Monitoring and Drift Detection"]
+        Logger["Telemetry Logger to fine_tune_telemetry.json"]
         DriftDetector["Statistical Drift Analyzer<br>(KS-Test / Population Stability Index)"]
-        Thresholds["Threshold Monitor:<br>MSE Spike > 2.0x | Churn Drop > 15%"]
+        Thresholds["Threshold Monitor:<br>MSE Spike above 2.0x / Churn Drop above 15%"]
     end
 
-    subgraph Maintenance_Action [Scheduled Maintenance Actions]
-        Alert["Alert Ops Team & Argos Monitor"]
+    subgraph Maintenance_Action["Scheduled Maintenance Actions"]
+        Alert["Alert Ops Team and Argos Monitor"]
         Retrain["Trigger Incremental V100 Fine-Tuning<br>(fine_tune_v100.py with New Seasonal Window)"]
         UpdateWeights["Publish Updated fine_tuned_hetero_gnn_v100.pt"]
     end

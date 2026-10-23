@@ -90,7 +90,7 @@ Data preprocessing and transformation follow the **Machine Learning Lifecycle**:
 
 ```mermaid
 flowchart TD
-    Raw["Raw Relational Tables (CSV)"] --> Clean["Type Validation & Scaling"]
+    Raw["Raw Relational Tables (CSV)"] --> Clean["Type Validation and Scaling"]
     Clean --> MonthCycle["Cyclical Month Features (sin/cos)"]
     MonthCycle --> ClimateRegime["Climate Regime Multipliers (cool/heat)"]
     ClimateRegime --> HeteroData["Monthly HeteroData PyG Snapshots (m = 1..12)"]
@@ -143,22 +143,22 @@ $$\text{month\_sin} = \sin(\theta_m), \quad \text{month\_cos} = \cos(\theta_m)$$
 To transition from synthetic baselines to empirical enterprise calibration, the pipeline integrates three real-world benchmark datasets under `hvac_gml_project/data/`:
 
 ```mermaid
-graph TD
-    subgraph Empirical_CSVs [Real Benchmark Datasets]
-        D1["ai4i2020.csv (UCI 601)<br>10,000 Industrial Records<br>HDF & PWF Failure Modes"]
+flowchart TD
+    subgraph Empirical_CSVs["Real Benchmark Datasets"]
+        D1["ai4i2020.csv (UCI 601)<br>10,000 Industrial Records<br>HDF and PWF Failure Modes"]
         D2["online_retail_ii_rfm.csv (UCI 502)<br>4,312 Customer Profiles<br>Recency, Frequency, Monetary"]
-        D3["hvac_power_consumption.csv (felixpradoh)<br>8,760 Hourly Readings<br>Thermal COP & Power Curves"]
+        D3["hvac_power_consumption.csv (felixpradoh)<br>8,760 Hourly Readings<br>Thermal COP and Power Curves"]
     end
 
-    subgraph Calibrated_Pipeline [Fine-Tuning Ingestion Engine]
-        FT["fine_tune_v100.py<br>(Tesla V100 GPU • FP16 AMP)"]
+    subgraph Calibrated_Pipeline["Fine-Tuning Ingestion Engine"]
+        FT["fine_tune_v100.py<br>(Tesla V100 GPU / FP16 AMP)"]
     end
 
-    subgraph Targets [Calibrated Graph Targets]
-        T1["Pillar 1: Demand MSE -> 33.13"]
-        T2["Pillar 2: Power MSE -> 0.0654 | Failure F1 -> 0.697"]
-        T3["Pillar 3: Sleeper Churn F1 -> 0.646"]
-        T4["Pillar 4: Inventory MSE -> 12.61"]
+    subgraph Targets["Calibrated Graph Targets"]
+        T1["Pillar 1: Demand MSE = 33.13"]
+        T2["Pillar 2: Power MSE = 0.0654 / Failure F1 = 0.697"]
+        T3["Pillar 3: Sleeper Churn F1 = 0.646"]
+        T4["Pillar 4: Inventory MSE = 12.61"]
     end
 
     D1 --> FT

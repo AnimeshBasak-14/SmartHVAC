@@ -12,7 +12,8 @@ plt.rcParams['ytick.labelsize'] = 9
 plt.rcParams['legend.fontsize'] = 10
 plt.rcParams['figure.titlesize'] = 13
 
-os.makedirs('docs/New folder/figures', exist_ok=True)
+OUT_DIR = os.path.dirname(os.path.abspath(__file__))
+os.makedirs(OUT_DIR, exist_ok=True)
 
 # -------------------------------------------------------------
 # Figure 1: Pre-Training vs. Fine-Tuning Loss Convergence
@@ -52,7 +53,7 @@ ax2.grid(True, linestyle=':', alpha=0.6)
 ax2.legend(loc='upper right')
 
 plt.tight_layout()
-fig1_path = 'docs/New folder/figures/fig2_v100_finetune_loss_curve.png'
+fig1_path = os.path.join(OUT_DIR, '06_pretrain_vs_finetune_loss_trajectory.png')
 plt.savefig(fig1_path, dpi=300)
 plt.close()
 print(f'Saved {fig1_path}')
@@ -108,7 +109,7 @@ for i in range(len(x2)):
     ax2.text(x2[i] + width/2, post_cls[i] + 0.02, gains[i], ha='center', va='bottom', fontsize=9, fontweight='bold', color='#2ca02c')
 
 plt.tight_layout()
-fig2_path = 'docs/New folder/figures/fig3_pillar_metrics_comparison.png'
+fig2_path = os.path.join(OUT_DIR, '07_pillar_performance_comparison_before_after.png')
 plt.savefig(fig2_path, dpi=300)
 plt.close()
 print(f'Saved {fig2_path}')
@@ -162,7 +163,7 @@ ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper right')
 
 plt.title('Audited 12-Month Operational Ledger & Financial Profitability Post-Fine-Tuning', fontweight='bold')
 plt.tight_layout()
-fig3_path = 'docs/New folder/figures/fig4_12month_financial_ledger.png'
+fig3_path = os.path.join(OUT_DIR, '08_12month_audited_financial_ledger.png')
 plt.savefig(fig3_path, dpi=300)
 plt.close()
 print(f'Saved {fig3_path}')

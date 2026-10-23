@@ -16,16 +16,16 @@ Model training was performed on the dedicated high-performance lab server:
 * **GPU Memory Footprint**: **28.77 MB** peak (due to highly optimized sparse CSR bipartite message-passing graphs)
 
 ```mermaid
-graph LR
-    subgraph Host_Server [Lab Server 10.13.1.7]
+flowchart LR
+    subgraph Host_Server["Lab Server 10.13.1.7"]
         V100["NVIDIA Tesla V100S-PCIE-32GB<br>32 GB HBM2 @ 1.13 TB/s"]
         CUDA["CUDA 13.0 / PyTorch 2.6.0+cu124"]
         PyG["PyTorch Geometric 2.8.1"]
     end
 
-    subgraph AMP_Pipeline [Mixed-Precision Training Loop]
-        Autocast["torch.amp.autocast('cuda')<br>FP16 Forward Pass"]
-        Scaler["torch.amp.GradScaler('cuda')<br>Loss Scaling & Underflow Prevention"]
+    subgraph AMP_Pipeline["Mixed-Precision Training Loop"]
+        Autocast["torch.amp.autocast(cuda)<br>FP16 Forward Pass"]
+        Scaler["torch.amp.GradScaler(cuda)<br>Loss Scaling and Underflow Prevention"]
         Clip["torch.nn.utils.clip_grad_norm_<br>max_norm = 1.0"]
     end
 
