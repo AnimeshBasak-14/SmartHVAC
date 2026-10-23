@@ -27,12 +27,14 @@ If you retrain and the artifacts change, run the script again.
 | `10_failure_and_churn_classification_detail.png` | Chart | Classification loss and how many devices and customers are flagged | Results |
 | `11_kendall_uncertainty_task_weights.png` | Chart | Final learned log-variances and the task weights they imply | Fine-tuning |
 | `12_economic_proactive_savings_breakdown.png` | Chart | Simulated saving of planned maintenance over reactive repair, by month | Business results |
-| `13_baseline_comparison.png` | Chart | XGBoost, GCN, GAT and our hetero-GNN on the same data | Results |
+| `13_baseline_comparison.png` | Chart | XGBoost, GCN, GAT and our hetero-GNN on the same data (training-set scores) | Results |
+| `14_heldout_test_scores.png` | Chart | Test scores of the GNN and two XGBoost variants on unseen months, unseen nodes and a 10-12 forecast | Results |
 
 ## Things to say honestly when presenting
 
-- **All scores are in-sample.** No model in `benchmark_baselines.py` or the fine-tuning script was scored on held-out
-  data, so figures 06, 07, 10, 11 and 13 show how well models fit the data they trained on. See
+- **Only figure 14 is held-out.** No model in `benchmark_baselines.py` or the fine-tuning script was scored on held-out
+  data, so figures 06, 07, 10, 11 and 13 show how well models fit the data they trained on. Figure 14 comes from
+  `heldout_evaluation.py`: no model wins everywhere, and neither failure classifier is clearly above a flag-everything baseline. See
   [docs/WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md](../docs/WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md).
 - **Figure 13:** XGBoost fits better than our hetero-GNN on most metrics (total loss 5.1 vs 46.5, failure F1 0.85 vs 0.70,
   churn F1 0.82 vs 0.65). Our model does beat the plain GCN and GAT. Do not describe the hetero-GNN as the best

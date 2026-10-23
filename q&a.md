@@ -118,7 +118,7 @@ Inventory part costs ($₹500 - ₹8,000$) and stock counts reside on a fundamen
 
 #### 3. Why we still chose the Hetero-GNN even though XGBoost scored higher
 XGBoost has the best numbers in this table, and we should say so. Three limits apply to the comparison:
-1. **No held-out data**: every model was trained and scored on the same 12 monthly graphs, so these are training-set scores. XGBoost's power error of exactly 0.000 shows it memorised the rows.
+1. **No held-out data**: every model was trained and scored on the same 12 monthly graphs, so these are training-set scores. XGBoost's power error of exactly 0.000 shows it memorised the rows. A separate held-out run (`docs/HELDOUT_EVALUATION.md`) gives a mixed picture: the GNN is better on seasonal demand and inventory, XGBoost on device power, and neither failure classifier is clearly above a flag-everything baseline.
 2. **No neighbour features**: XGBoost saw only each node's own 8 features. We did not try a tabular baseline with neighbour averages added.
 3. **Rule-generated labels**: the labels are built from each node's own features plus noise, which favours a tabular model.
 

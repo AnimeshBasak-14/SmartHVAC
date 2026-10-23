@@ -43,7 +43,7 @@ The comparison is in `hvac_gml_project/artifacts/baseline_model_comparison.csv` 
 
 Four things limit what these numbers mean:
 
-1. **There is no held-out data.** In `benchmark_baselines.py` every model is trained on all 12 monthly
+1. **This benchmark has no held-out data.** In `benchmark_baselines.py` every model is trained on all 12 monthly
    graphs and then scored on those same graphs. The same is true of our fine-tuning results (loss 137.04
    to 46.80, F1 scores). These are training-set scores. They show how well each model fits the data it
    saw, not how well it predicts new data. XGBoost with 100 trees of depth 5 on a few hundred rows can
@@ -59,6 +59,17 @@ Four things limit what these numbers mean:
    same resident-device pairs (AUC 0.965, in-sample). Our model's AUC is 0.5, which is chance level. So we
    have no evidence that our cross-sell predictor works, and no fair evidence that XGBoost's does.
 
+### 3.1 What the held-out run shows
+
+`heldout_evaluation.py` (see [HELDOUT_EVALUATION.md](HELDOUT_EVALUATION.md) and figure 14) scored the GNN and two XGBoost variants on unseen months and unseen nodes. The result is mixed:
+
+* The GNN is better on demand and inventory when testing on unseen months (inventory MSE 23 vs 54 to 352), and in the strict forecast XGBoost's demand error is even worse than predicting the mean.
+* XGBoost is far better on device power, and slightly better on failure F1 and (in the forecast) churn F1.
+* Neither failure classifier is clearly above a flag-everything baseline.
+* Adding neighbour features helped XGBoost on inventory but not in the node split.
+
+So the in-sample claim that XGBoost is simply better does not hold up, and neither does the opposite claim. These are single-run results on rule-generated labels.
+
 The older explanation that the GCN and GAT fail because of over-smoothing is plausible, but we never ran an
 experiment to confirm it. Treat it as a hypothesis.
 
@@ -66,9 +77,10 @@ experiment to confirm it. Treat it as a hypothesis.
 
 - "We chose a heterogeneous GraphSAGE model because the data is a typed graph and we wanted one shared
   model for five tasks, inductive scoring of new nodes, and a link-prediction decoder."
-- "On our benchmark XGBoost fits the data better. That benchmark is in-sample, gives XGBoost no neighbour
-  features, and uses labels generated from node-level rules, so it does not show which approach would
-  generalise better on real data."
+- "On our in-sample benchmark XGBoost fits the data better. On held-out months and nodes the picture is mixed: the GNN is
+  better on seasonal demand and inventory, XGBoost is better on device power, and neither failure classifier is clearly
+  better than flagging everything. The labels are generated from rules, so this does not show which approach would work
+  better on real data."
 - "Fine-tuning improved our model: total loss fell from 137.04 to 46.80 and the failure and churn F1
   scores rose. These are training-set results."
 
@@ -76,7 +88,7 @@ Do not say that the hetero-GNN is the best model, or that XGBoost "fails" or giv
 
 ## 5. What would settle the question
 
-The script `hvac_gml_project/heldout_evaluation.py` does items 1 and 2 below (see [HELDOUT_EVALUATION.md](HELDOUT_EVALUATION.md)). Items 3 and 4 still need new data or code.
+Items 1 and 2 below have been done with `hvac_gml_project/heldout_evaluation.py` (see [HELDOUT_EVALUATION.md](HELDOUT_EVALUATION.md)). Items 3 and 4 still need new data or code, and the held-out run should be repeated with several random seeds.
 
 1. Hold out data: train on 9 months and test on the last 3, or hold out a random 20% of nodes.
 2. Add a stronger tabular baseline: XGBoost with neighbour-aggregate features.
@@ -86,6 +98,7 @@ The script `hvac_gml_project/heldout_evaluation.py` does items 1 and 2 below (se
 
 ## 6. If we had to pick for a real deployment
 
-On the current features, five XGBoost models would be simpler, faster to train and, on our own numbers,
-more accurate. We would move to the graph model only if held-out tests show that neighbour information
-improves predictions, or if we need the shared embeddings and link prediction.
+XGBoost models would be simpler and faster to train, and they were clearly better on device power. The GNN was better on
+seasonal demand and inventory when tested on unseen months. A reasonable choice is XGBoost for power and failure, and either
+model for demand and inventory, with the GNN kept if we need the shared embeddings and link prediction. Repeat the held-out
+run with several seeds before deciding.

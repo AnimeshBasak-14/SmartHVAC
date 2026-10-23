@@ -351,3 +351,40 @@ a2.legend(loc="upper right")
 fig.suptitle("Baseline comparison on the training data (no held-out set): XGBoost fits best",
              fontweight="bold", color=NAVY)
 save(fig, "13_baseline_comparison.png")
+
+# ================================================================ 14 held-out test scores
+HO_MAIN = os.path.join(ART, "heldout_evaluation_months3-6-9-12_nodes.csv")
+HO_FORECAST = os.path.join(ART, "heldout_evaluation_forecast.csv")
+if os.path.exists(HO_MAIN) and os.path.exists(HO_FORECAST):
+    d_main, d_fc = pd.read_csv(HO_MAIN), pd.read_csv(HO_FORECAST)
+    d_main, d_fc = d_main[d_main["data"] == "test"], d_fc[d_fc["data"] == "test"]
+    groups = [("Months\n3,6,9,12", d_main[d_main["split"] == "months"]),
+              ("20% of\nnodes", d_main[d_main["split"] == "nodes"]),
+              ("Forecast\n10-12", d_fc)]
+    model_styles = [("Hetero-GNN", GREEN), ("XGBoost (own features)", GREY), ("XGBoost (+ neighbour features)", BLUE)]
+    panels = [("demand_mse", "Demand MSE (log, lower is better)", True), ("inventory_mse", "Inventory MSE (log, lower is better)", True),
+              ("power_mse", "Power MSE (log, lower is better)", True), ("failure_f1", "Failure F1 (higher is better)", False),
+              ("churn_f1", "Churn F1 (higher is better)", False)]
+    fig, axes = plt.subplots(1, 5, figsize=(18, 4.6))
+    for ax, (col, title, use_log) in zip(axes, panels):
+        for gi, (_, df) in enumerate(groups):
+            ref = df[df["model"].str.startswith("Reference")][col].iloc[0]
+            for mi, (name, color) in enumerate(model_styles):
+                ax.bar(gi + (mi - 1) * 0.27, df[df["model"] == name][col].iloc[0], 0.26, color=color,
+                       label=name if gi == 0 else None)
+            ax.hlines(ref, gi - 0.42, gi + 0.42, colors="black", linestyles="--", lw=1.5,
+                      label="Reference (predict mean / flag all)" if gi == 0 else None)
+        if use_log:
+            ax.set_yscale("log")
+        else:
+            ax.set_ylim(0, 1)
+        ax.set_xticks(range(3))
+        ax.set_xticklabels([g[0] for g in groups], fontsize=7.5)
+        ax.set_title(title, fontsize=9.5)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=4, fontsize=9, frameon=False)
+    fig.suptitle("Held-out test scores (single run, seed 42): no model wins everywhere", fontweight="bold", color=NAVY)
+    fig.subplots_adjust(bottom=0.28, top=0.86, wspace=0.28)
+    save(fig, "14_heldout_test_scores.png")
+else:
+    print("14_heldout_test_scores.png skipped (held-out CSV files not found in artifacts/)")

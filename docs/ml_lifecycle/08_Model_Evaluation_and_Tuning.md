@@ -96,12 +96,10 @@ After fine-tuning, the simulated 12-month figures are: revenue ₹2.61 Cr, opera
 ## 5. Limits of this evaluation
 
 * **No held-out data.** The model and the baselines were scored on the same 12 monthly graphs they were trained on.
-  The before/after numbers above show how well the model fits the training data, not how well it predicts new data.
+  The before/after numbers above show how well the model fits the training data, not how well it predicts new data. A separate held-out run is in [HELDOUT_EVALUATION.md](../HELDOUT_EVALUATION.md).
 * **Rule-generated labels.** The demand, failure, churn and inventory labels are produced by rules in `data_pipeline.py`
   plus noise, so the scores measure how well the model learns those rules.
 * **Simulated finances.** Revenue, cost and savings come from prices and costs we assumed in
   `business_financial_engine.py`. The "before fine-tuning" financial figures were removed because the first run's files were
   overwritten and they cannot be re-checked.
-* **Next step.** Train on 9 months and test on the last 3 (or hold out 20% of nodes), add a tabular baseline with
-  neighbour features, and evaluate link prediction on edges removed before training. Details are in
-  [WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md](../WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md).
+* **Held-out run (done).** We trained on part of the months or nodes and tested on the rest, with an XGBoost baseline that also gets neighbour features. The result is mixed: the GNN is better on seasonal demand and inventory, XGBoost on device power, and neither failure classifier is clearly above a flag-everything baseline. Details, caveats and the next steps are in [HELDOUT_EVALUATION.md](../HELDOUT_EVALUATION.md) and [WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md](../WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md).

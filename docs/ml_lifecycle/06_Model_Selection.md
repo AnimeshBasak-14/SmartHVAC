@@ -31,7 +31,7 @@ To compare the candidates, all baselines were trained and tested on the identica
 | **Multi-Task Hetero-GNN**<br>*(HeteroConv + SAGEConv, Ours)* | **33.13** | **0.065** | **0.697** | **0.646** | **12.61** | **46.46** | **Chosen**: one model for all 4 entity types with separate weights per relation. Not the best score in this benchmark. |
 
 > [!WARNING]
-> **Read this first.** Neither our model nor the baselines were scored on held-out data, XGBoost was given no neighbour features, and the labels are generated from node-level rules. So this table shows how well each model fits the data it was trained on, not how well it would generalise. See [why we chose the hetero-GraphSAGE model](../WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md). On these numbers XGBoost scores higher than our model on every metric.
+> **Read this first.** This table was scored on the training data (no held-out set), XGBoost was given no neighbour features, and the labels are generated from node-level rules. So this table shows how well each model fits the data it was trained on, not how well it would generalise. See [why we chose the hetero-GraphSAGE model](../WHY_HETERO_GRAPHSAGE_OVER_XGBOOST.md). On these numbers XGBoost scores higher than our model on every metric. A separate held-out run gives a more mixed result; see [HELDOUT_EVALUATION.md](../HELDOUT_EVALUATION.md).
 
 > [!IMPORTANT]
 > **What the results show**:

@@ -1,25 +1,37 @@
 """
 heldout_evaluation.py
 
-Scores three models on data they were NOT trained on:
-  1. Hetero-GNN (trained from scratch with the fine-tuning recipe, so no saved checkpoint is reused)
-  2. XGBoost on each node's own 8 features (same as benchmark_baselines.py)
-  3. XGBoost on own features plus the mean features of each node's neighbours
-     (a fairer tabular baseline: it gets some graph information)
+Scores several models on data they were NOT trained on:
+  gnn      Hetero-GNN (trained from scratch with the fine-tuning recipe, so no saved checkpoint is reused)
+  xgb      XGBoost on each node's own 8 features (same as benchmark_baselines.py)
+  xgb_nbr  XGBoost on own features plus the mean features of each node's neighbours
+  ridge    Ridge regression on own features (L2-penalised logistic regression for failure and churn)
+  ols      Multiple linear regression on own features (logistic regression with almost no penalty for failure and churn)
+  ridge_poly  (optional, not run by default) Ridge on own features plus all pairwise products of them
+
+Linear models can only add up effects. Several labels here contain products (for example power = rated power x
+season stress), so ridge_poly checks whether the missing products are what holds the plain linear models back.
 
 Two kinds of split:
   months : train on 8 months, test on the other 4 (default test months 3, 6, 9, 12)
   nodes  : train on 80% of the locations / devices / residents / parts, test on the other 20%
            (test nodes are still part of the graph, so this is the usual "transductive" node split)
 
+Seeds: --seeds 42,43,44 repeats everything with each seed. The seed changes the label noise, the node split and the
+model initialisation (not the 100 customer profiles sampled from Online Retail II). With several seeds the script
+also prints the mean and standard deviation of the test scores.
+
 Caveats: the labels are generated from rules in data_pipeline.py plus noise, and there are only 10 locations,
 40 devices, 100 residents and 20 parts, so the node split has very few test rows (see the n_test columns).
 
 Run on the lab server:
     cd hvac_gml_project
-    python heldout_evaluation.py                      # both splits
-    python heldout_evaluation.py --split months --test-months 10,11,12   # strict "forecast the last 3 months"
-Output: artifacts/heldout_evaluation.csv and a table on screen.
+    python heldout_evaluation.py                                         # both splits, seed 42, 5 models
+    python heldout_evaluation.py --seeds 42,43,44 --out heldout_5models_main.csv
+    python heldout_evaluation.py --split months --test-months 10,11,12 --seeds 42,43,44 --out heldout_5models_forecast.csv
+    python heldout_evaluation.py --models ridge,ols,ridge_poly           # fast: only the linear models
+Output: artifacts/<out> (default heldout_evaluation.csv), artifacts/<out>_summary.csv when several seeds are used,
+and a table on screen.
 """
 import argparse
 import copy
@@ -32,6 +44,9 @@ import torch
 import torch.nn as nn
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
 from sklearn.metrics import f1_score, mean_squared_error
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 try:
     import xgboost as xgb
@@ -255,53 +270,140 @@ def train_and_predict_xgb(graphs, train, with_neighbours, seed):
     return predict
 
 
+# ----------------------------------------------------------------------------- linear models
+def train_and_predict_linear(graphs, train, regularised, polynomial, ridge_alpha):
+    """Ridge (regularised=True) or multiple linear regression (False) on each node's own features.
+    Regression tasks use Ridge / LinearRegression. Failure and churn use logistic regression (C=1 for ridge,
+    C=1e6 = almost no penalty for the plain version) with the same positive-class weights as XGBoost.
+    polynomial=True adds all pairwise products of the features first."""
+    feats = node_features(graphs, False)
+    models = {}
+    for task, (ntype, attr) in TASKS.items():
+        X, y = [], []
+        for m in Config.MONTHS:
+            sel = train[(m, ntype)]
+            if sel.any():
+                X.append(feats[m][ntype][sel])
+                y.append(graphs[m][ntype][attr].numpy().flatten()[sel])
+        X, y = np.vstack(X), np.concatenate(y)
+        steps = [PolynomialFeatures(degree=2, include_bias=False)] if polynomial else []
+        steps.append(StandardScaler())
+        if task in ("failure", "churn"):
+            weight = 2.5 if task == "failure" else 1.8
+            steps.append(LogisticRegression(C=1.0 if regularised else 1e6, class_weight={0: 1.0, 1: weight}, max_iter=5000))
+            y = y.astype(int)
+        else:
+            steps.append(Ridge(alpha=ridge_alpha) if regularised else LinearRegression())
+        models[task] = make_pipeline(*steps).fit(X, y)
+
+    def predict(m):
+        out = {}
+        for task, (ntype, _) in TASKS.items():
+            X = feats[m][ntype]
+            if task in ("failure", "churn"):
+                out[task] = models[task].predict_proba(X)[:, 1]
+            elif task == "inventory":
+                out[task] = np.clip(models[task].predict(X), 0, None)
+            else:
+                out[task] = models[task].predict(X)
+        return out
+    return predict
+
+
 # ----------------------------------------------------------------------------- main
+METRICS = ["demand_mse", "power_mse", "inventory_mse", "failure_f1", "churn_f1"]
+MODEL_NAMES = {
+    "gnn": "Hetero-GNN",
+    "xgb": "XGBoost (own features)",
+    "xgb_nbr": "XGBoost (+ neighbour features)",
+    "ridge": "Ridge regression (own features)",
+    "ols": "Multiple linear regression (own features)",
+    "ridge_poly": "Ridge + pairwise products (own features)",
+}
+
+
 def main():
-    ap = argparse.ArgumentParser(description="Held-out evaluation: GNN vs XGBoost")
+    ap = argparse.ArgumentParser(description="Held-out evaluation: GNN vs XGBoost vs linear models")
     ap.add_argument("--split", choices=["months", "nodes", "both"], default="both")
     ap.add_argument("--test-months", default="3,6,9,12", help="comma-separated months held out in the months split")
+    ap.add_argument("--models", default="gnn,xgb,xgb_nbr,ridge,ols",
+                    help="comma-separated subset of: " + ",".join(MODEL_NAMES))
     ap.add_argument("--epochs", type=int, default=200)
     ap.add_argument("--lr", type=float, default=1e-3)
+    ap.add_argument("--ridge-alpha", type=float, default=1.0)
     ap.add_argument("--seed", type=int, default=Config.SEED)
+    ap.add_argument("--seeds", default=None, help="comma-separated seeds, e.g. 42,43,44 (overrides --seed)")
+    ap.add_argument("--out", default="heldout_evaluation.csv", help="file name inside artifacts/")
     args = ap.parse_args()
     test_months = [int(x) for x in args.test_months.split(",")]
-
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    builder = HVACGraphDatasetBuilder(seed=args.seed)
-    tables, power_profiles = load_empirical_fine_tuning_tables(builder)
-    graphs = build_monthly_graphs(builder, tables, power_profiles)
-    print(f"Device: {Config.DEVICE} | XGBoost available: {HAS_XGB} | test months (months split): {test_months}")
+    wanted = [x.strip() for x in args.models.split(",")]
+    unknown = [x for x in wanted if x not in MODEL_NAMES]
+    if unknown:
+        raise SystemExit(f"unknown model(s) {unknown}; choose from {list(MODEL_NAMES)}")
+    seeds = [int(s) for s in args.seeds.split(",")] if args.seeds else [args.seed]
+    print(f"Device: {Config.DEVICE} | XGBoost available: {HAS_XGB} | models: {wanted} | seeds: {seeds} | "
+          f"test months (months split): {test_months}")
 
     rows = []
-    for kind in (["months", "nodes"] if args.split == "both" else [args.split]):
-        print("\n" + "=" * 70 + f"\n SPLIT: {kind}\n" + "=" * 70)
-        train, test = make_split(kind, graphs, test_months, args.seed)
-        t0 = time.time()
-        predictors = {
-            "Hetero-GNN": train_and_predict_gnn(graphs, train, args.epochs, args.lr, args.seed),
-            "XGBoost (own features)": train_and_predict_xgb(graphs, train, False, args.seed),
-            "XGBoost (+ neighbour features)": train_and_predict_xgb(graphs, train, True, args.seed),
-        }
-        print(f"trained 3 models in {time.time() - t0:.1f}s")
-        y_tr_ref, _ = collect(graphs, train, lambda m: {k: np.zeros(graphs[m][TASKS[k][0]].x.shape[0]) for k in TASKS})
-        y_te_ref, _ = collect(graphs, test, lambda m: {k: np.zeros(graphs[m][TASKS[k][0]].x.shape[0]) for k in TASKS})
-        ref = reference_scores(y_tr_ref, y_te_ref)
-        rows.append({"split": kind, "model": "Reference: predict train mean / flag everything", "data": "test", **ref})
-        for name, predict in predictors.items():
-            for data_name, masks in (("train", train), ("test", test)):
-                y, p = collect(graphs, masks, predict)
-                rows.append({"split": kind, "model": name, "data": data_name, **score(y, p)})
+    for seed in seeds:
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        builder = HVACGraphDatasetBuilder(seed=seed)
+        tables, power_profiles = load_empirical_fine_tuning_tables(builder)
+        graphs = build_monthly_graphs(builder, tables, power_profiles)
+
+        for kind in (["months", "nodes"] if args.split == "both" else [args.split]):
+            print("\n" + "=" * 70 + f"\n SEED {seed} | SPLIT: {kind}\n" + "=" * 70)
+            train, test = make_split(kind, graphs, test_months, seed)
+            t0 = time.time()
+            predictors = {}
+            for key in wanted:
+                if key == "gnn":
+                    predictors[MODEL_NAMES[key]] = train_and_predict_gnn(graphs, train, args.epochs, args.lr, seed)
+                elif key == "xgb":
+                    predictors[MODEL_NAMES[key]] = train_and_predict_xgb(graphs, train, False, seed)
+                elif key == "xgb_nbr":
+                    predictors[MODEL_NAMES[key]] = train_and_predict_xgb(graphs, train, True, seed)
+                else:
+                    predictors[MODEL_NAMES[key]] = train_and_predict_linear(
+                        graphs, train, regularised=key.startswith("ridge"), polynomial=(key == "ridge_poly"),
+                        ridge_alpha=args.ridge_alpha)
+            print(f"trained {len(predictors)} models in {time.time() - t0:.1f}s")
+            zeros = lambda m: {k: np.zeros(graphs[m][TASKS[k][0]].x.shape[0]) for k in TASKS}
+            y_tr_ref, _ = collect(graphs, train, zeros)
+            y_te_ref, _ = collect(graphs, test, zeros)
+            ref = reference_scores(y_tr_ref, y_te_ref)
+            rows.append({"seed": seed, "split": kind, "model": "Reference: predict train mean / flag everything",
+                         "data": "test", **ref})
+            for name, predict in predictors.items():
+                for data_name, masks in (("train", train), ("test", test)):
+                    y, p = collect(graphs, masks, predict)
+                    rows.append({"seed": seed, "split": kind, "model": name, "data": data_name, **score(y, p)})
 
     df = pd.DataFrame(rows)
     os.makedirs(Config.ARTIFACT_DIR, exist_ok=True)
-    out_path = os.path.join(Config.ARTIFACT_DIR, "heldout_evaluation.csv")
+    out_path = os.path.join(Config.ARTIFACT_DIR, args.out)
     df.to_csv(out_path, index=False)
-    show = ["split", "model", "data", "demand_mse", "power_mse", "inventory_mse", "failure_f1", "churn_f1",
-            "n_device_rows", "n_resident_rows"]
-    with pd.option_context("display.width", 250, "display.max_columns", 30, "display.float_format", "{:.3f}".format):
+    show = ["seed", "split", "model", "data"] + METRICS + ["n_device_rows", "n_resident_rows"]
+    with pd.option_context("display.width", 250, "display.max_columns", 30, "display.float_format", "{:.4f}".format):
         print("\n" + df[show].to_string(index=False))
     print(f"\nSaved {out_path}")
+
+    if len(seeds) > 1:
+        test_rows = df[df["data"] == "test"]
+        summary = test_rows.groupby(["split", "model"])[METRICS].agg(["mean", "std"])
+        summary.columns = [f"{a}_{b}" for a, b in summary.columns]
+        summary = summary.reset_index()
+        summary_path = out_path.replace(".csv", "_summary.csv")
+        summary.to_csv(summary_path, index=False)
+        print(f"\nTEST scores, mean and standard deviation over seeds {seeds}:")
+        for kind, grp in summary.groupby("split"):
+            print(f"\n  split: {kind}")
+            table = pd.DataFrame({"model": grp["model"]})
+            for c in METRICS:
+                table[c] = [f"{m:.4g} +/- {s:.2g}" for m, s in zip(grp[f"{c}_mean"], grp[f"{c}_std"])]
+            print(table.to_string(index=False))
+        print(f"\nSaved {summary_path}")
     print("Compare 'train' with 'test' rows: a big gap means the model memorised the training data.")
 
 
