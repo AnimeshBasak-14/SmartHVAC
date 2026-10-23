@@ -63,13 +63,11 @@ For each node type $`v \in \mathcal{V}`$ and each incident relation $`r = (u, \t
 \mathbf{h}_{v, r}^{(l)} = \mathbf{W}_1^{(r)} \mathbf{h}_v^{(l-1)} + \mathbf{W}_2^{(r)} \cdot \text{MEAN}_{u \in \mathcal{N}_r(v)} \left( \mathbf{h}_u^{(l-1)} \right)
 ```
 
-
 Aggregations across all incoming relations are summed:
 
 ```math
 \mathbf{h}_v^{(l)} = \text{ReLU} \left( \sum_{r \in \mathcal{R}_{\text{in}}(v)} \mathbf{h}_{v, r}^{(l)} \right)
 ```
-
 
 This guarantees that:
 * A `device` embedding receives information from its owning `resident` as well as its required spare `parts`.
@@ -82,36 +80,35 @@ This guarantees that:
 
 1. **Demand Head (`head_demand`)**:
 
-   ```math
-   \hat{y}_{\text{demand}} = \mathbf{w}_{\text{dem}}^T \mathbf{h}_{\text{loc}} + b_{\text{dem}}
-   ```
+```math
+\hat{y}_{\text{demand}} = \mathbf{w}_{\text{dem}}^T \mathbf{h}_{\text{loc}} + b_{\text{dem}}
+```
 
 2. **Power & Failure Heads (`head_power`, `head_failure`)**:
 
-   ```math
-   \hat{y}_{\text{power}} = \mathbf{w}_{\text{pwr}}^T \mathbf{h}_{\text{dev}} + b_{\text{pwr}}
-   ```
+```math
+\hat{y}_{\text{power}} = \mathbf{w}_{\text{pwr}}^T \mathbf{h}_{\text{dev}} + b_{\text{pwr}}
+```
 
-   ```math
-   \hat{p}_{\text{failure}} = \sigma(\mathbf{w}_{\text{fail}}^T \mathbf{h}_{\text{dev}} + b_{\text{fail}})
-   ```
+```math
+\hat{p}_{\text{failure}} = \sigma(\mathbf{w}_{\text{fail}}^T \mathbf{h}_{\text{dev}} + b_{\text{fail}})
+```
 
 3. **Sleeper Churn Head (`head_sleeper`)**:
 
-   ```math
-   \hat{p}_{\text{sleeper}} = \sigma(\mathbf{w}_{\text{sleep}}^T \mathbf{h}_{\text{res}} + b_{\text{sleep}})
-   ```
+```math
+\hat{p}_{\text{sleeper}} = \sigma(\mathbf{w}_{\text{sleep}}^T \mathbf{h}_{\text{res}} + b_{\text{sleep}})
+```
 
 4. **Inventory Replenishment Head (`head_inventory`)**:
 
-   ```math
-   \hat{y}_{\text{inventory}} = \text{ReLU}(\mathbf{w}_{\text{inv}}^T \mathbf{h}_{\text{part}} + b_{\text{inv}})
-   ```
+```math
+\hat{y}_{\text{inventory}} = \text{ReLU}(\mathbf{w}_{\text{inv}}^T \mathbf{h}_{\text{part}} + b_{\text{inv}})
+```
 
 5. **Cross-Sell Link Predictor (`decode_cross_sell_link`)**:
 
-   ```math
-   \hat{s}_{i, j} = \sigma \left( \langle \mathbf{h}_{\text{res}, i}, \mathbf{h}_{\text{dev}, j} \rangle \right)
-   ```
-
+```math
+\hat{s}_{i, j} = \sigma \left( \langle \mathbf{h}_{\text{res}, i}, \mathbf{h}_{\text{dev}, j} \rangle \right)
+```
 

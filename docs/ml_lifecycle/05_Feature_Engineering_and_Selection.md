@@ -21,7 +21,6 @@ To enforce smooth periodic continuity, our pipeline applies **Trigonometric Cycl
 m_{\sin} = \sin(\theta_m), \quad m_{\cos} = \cos(\theta_m)
 ```
 
-
 ```mermaid
 flowchart LR
     subgraph Trigonometric_Cycle["Continuous 2D Unit Circle"]

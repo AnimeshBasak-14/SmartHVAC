@@ -47,9 +47,9 @@ flowchart TD
 * **Logical Value Bounds**: Filtered out negative or zero transactions where `Quantity <= 0` or `Price <= 0`.
 * **Revenue Calculation**: Computed line-item total:
 
-  ```math
-  \text{TotalPrice} = \text{Quantity} \times \text{Price}
-  ```
+```math
+\text{TotalPrice} = \text{Quantity} \times \text{Price}
+```
 
 * **Snapshot Date Aggregation**: Established snapshot date $`T_{\text{snapshot}} = \max(\text{InvoiceDate}) + 1\text{ day}`$. Grouped transactions by `Customer ID` into exact RFM dimensions:
   * **Recency ($`R`$)**: $`(T_{\text{snapshot}} - \max(\text{InvoiceDate}))_{\text{days}}`$
@@ -59,17 +59,17 @@ flowchart TD
 ### 2. UCI AI4I 2020 (`ai4i2020.csv`)
 * **Mechanical Power Derivation**: Angular velocity ($`\omega`$) and shaft torque ($`\tau`$) were combined via thermodynamic rotational mechanics:
 
-  ```math
-  P_{\text{mech}} (\text{kW}) = \frac{\tau (\text{N}\cdot\text{m}) \times N (\text{rpm}) \times \frac{2\pi}{60}}{1000}
-  ```
+```math
+P_{\text{mech}} (\text{kW}) = \frac{\tau (\text{N}\cdot\text{m}) \times N (\text{rpm}) \times \frac{2\pi}{60}}{1000}
+```
 
   * Empirical mechanical power mean: $`6.28\text{ kW}`$ ($`\sigma = 1.07\text{ kW}`$, range: $`1.15\text{ kW}`$ to $`10.47\text{ kW}`$).
   * Normalized to the commercial residential/light-commercial HVAC range ($`1.2\text{ kW} - 3.6\text{ kW}`$).
 * **Failure Flag Consolidation**: Created a unified binary ground truth for critical machine failure:
 
-  ```math
-  y_{\text{failure}} = \max(\text{HDF}, \text{PWF})
-  ```
+```math
+y_{\text{failure}} = \max(\text{HDF}, \text{PWF})
+```
 
   yielding 207 verified critical events across 10,000 observations ($`2.07\%`$ empirical rate).
 

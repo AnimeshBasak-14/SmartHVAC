@@ -116,40 +116,38 @@ For every month snapshot $`m \in \{1, \dots, 12\}`$, temporal signals are inject
 \text{month\_sin} = \sin(\theta_m), \quad \text{month\_cos} = \cos(\theta_m)
 ```
 
-
 ### Phase 3: Seasonal Target Construction
 * **Location Demand Target ($`y_{\text{demand}}`$)**:
 
-  ```math
-  y_{\text{demand}} = 120 \cdot \mu_{\text{cool}} \cdot \mathbf{1}_{\text{metro}} \cdot \left(\frac{T}{30}\right) + 95 \cdot \mu_{\text{heat}} \cdot \mathbf{1}_{\text{village}} + \epsilon
-  ```
+```math
+y_{\text{demand}} = 120 \cdot \mu_{\text{cool}} \cdot \mathbf{1}_{\text{metro}} \cdot \left(\frac{T}{30}\right) + 95 \cdot \mu_{\text{heat}} \cdot \mathbf{1}_{\text{village}} + \epsilon
+```
 
 * **Device Power & Failure Target ($`y_{\text{power}}, y_{\text{failure}}`$)**:
 
-  ```math
-  y_{\text{power}} = P_{\text{rated}} \cdot (0.6 + 0.6 \cdot \mu_{\text{stress}})
-  ```
+```math
+y_{\text{power}} = P_{\text{rated}} \cdot (0.6 + 0.6 \cdot \mu_{\text{stress}})
+```
 
-  ```math
-  p_{\text{fail}} = \text{clip}\left(\text{risk}_{\text{base}} \cdot (0.7 + 0.9 \cdot \mu_{\text{stress}}), 0.01, 0.98\right)
-  ```
+```math
+p_{\text{fail}} = \text{clip}\left(\text{risk}_{\text{base}} \cdot (0.7 + 0.9 \cdot \mu_{\text{stress}}), 0.01, 0.98\right)
+```
 
 * **Resident Sleeper Target ($`y_{\text{sleeper}}`$)**:
 
-  ```math
-  \text{engagement}_{\text{dyn}} = \text{engagement}_{\text{base}} \cdot \left(1.0 - 0.35 \cdot \mu_{\text{heat}}\right)
-  ```
+```math
+\text{engagement}_{\text{dyn}} = \text{engagement}_{\text{base}} \cdot \left(1.0 - 0.35 \cdot \mu_{\text{heat}}\right)
+```
 
-  ```math
-  y_{\text{sleeper}} = \mathbf{1}\left(1.0 - \text{engagement}_{\text{dyn}} + \epsilon > 0.58\right)
-  ```
+```math
+y_{\text{sleeper}} = \mathbf{1}\left(1.0 - \text{engagement}_{\text{dyn}} + \epsilon > 0.58\right)
+```
 
 * **Part Inventory Target ($`y_{\text{inventory}}`$)**:
 
-  ```math
-  y_{\text{inventory}} = 35.0 + 95.0 \cdot \mu_{\text{part\_season}} + \epsilon
-  ```
-
+```math
+y_{\text{inventory}} = 35.0 + 95.0 \cdot \mu_{\text{part\_season}} + \epsilon
+```
 
 ---
 
@@ -234,5 +232,4 @@ flowchart TD
   * `Humidity_pct`: Relative atmospheric humidity ($`20\% \dots 98\%`$).
   * `Power_kW`: Hourly power consumption ($`0.10 \dots 4.50\text{ kW}`$, mean: $`1.85\text{ kW}`$).
 * **Integration**: Ingested by `telemetry_premodel.py` and `fine_tune_v100.py` to drive empirical thermodynamic power curves ($`P = P_{\text{base}} + \alpha \Delta T + \beta \text{Humidity}`$), establishing ground-truth power draw ($`y_{\text{power}}`$) across all 12 monthly graph snapshots.
-
 

@@ -61,16 +61,14 @@ Let the system at month $`m \in \{1, \dots, 12\}`$ be represented as a snapshot 
 \mathcal{G}_m = (\mathcal{V}, \mathcal{E}, \mathcal{X}_m)
 ```
 
-
 Where:
 * **Node Sets**: $`\mathcal{V} = \mathcal{V}_{\text{loc}} \cup \mathcal{V}_{\text{dev}} \cup \mathcal{V}_{\text{res}} \cup \mathcal{V}_{\text{part}}`$
 * **Edge Sets**: $`\mathcal{E} = \mathcal{E}_{\text{res}\to\text{loc}} \cup \mathcal{E}_{\text{res}\to\text{dev}} \cup \mathcal{E}_{\text{dev}\to\text{part}} \cup \mathcal{E}_{\text{inverses}}`$
 * **Dynamic Node Features**: $`\mathcal{X}_m = \{\mathbf{X}_m^{(\text{loc})}, \mathbf{X}_m^{(\text{dev})}, \mathbf{X}_m^{(\text{res})}, \mathbf{X}_m^{(\text{part})}\}`$, where each node feature vector embeds explicit continuous cyclical temporal features:
 
-  ```math
-  m_{\sin} = \sin\left(\frac{2\pi(m-1)}{12}\right), \quad m_{\cos} = \cos\left(\frac{2\pi(m-1)}{12}\right)
-  ```
-
+```math
+m_{\sin} = \sin\left(\frac{2\pi(m-1)}{12}\right), \quad m_{\cos} = \cos\left(\frac{2\pi(m-1)}{12}\right)
+```
 
 ### Optimization Objective
 The objective is to train a parameterized Hetero-GNN $`f_\Theta(\mathcal{G}_m)`$ that jointly minimizes the weighted multi-task objective:
@@ -79,13 +77,11 @@ The objective is to train a parameterized Hetero-GNN $`f_\Theta(\mathcal{G}_m)`$
 \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{demand}}(\hat{y}_{\text{demand}}, y_{\text{demand}}) + \mathcal{L}_{\text{maint}}(\hat{y}_{\text{power}}, \hat{y}_{\text{fail}}, y_{\text{power}}, y_{\text{fail}}) + \mathcal{L}_{\text{churn}}(\hat{y}_{\text{sleep}}, y_{\text{sleep}}) + \mathcal{L}_{\text{inv}}(\hat{y}_{\text{inv}}, y_{\text{inv}})
 ```
 
-
 Balanced dynamically through Kendall Homoscedastic Uncertainty Weighting:
 
 ```math
 \mathcal{L}_{\text{uncertainty}}(\Theta, \mathbf{\sigma}) = \sum_{i=1}^4 \left( \frac{1}{2\sigma_i^2} \mathcal{L}_i + \frac{1}{2} \log \sigma_i^2 \right)
 ```
-
 
 ---
 

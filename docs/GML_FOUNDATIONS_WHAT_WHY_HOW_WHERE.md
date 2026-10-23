@@ -16,7 +16,6 @@ In this system, we implement a **Heterogeneous Graph Neural Network (Hetero-GNN)
 \mathcal{G} = \left(\mathcal{V}, \mathcal{E}, \mathcal{T}_v, \mathcal{T}_e\right)
 ```
 
-
 * **Node Types ($`\mathcal{T}_v`$)**: $`\mathcal{T}_v = \{\text{Resident}, \text{Location}, \text{Device}, \text{InventoryPart}\}`$
 * **Edge Types ($`\mathcal{T}_e`$)**: $`\mathcal{T}_e = \{\text{LOCATED\_IN}, \text{HAS\_RESIDENT}, \text{OWNS}, \text{OWNED\_BY}, \text{REQUIRES\_PART}, \text{USED\_IN}\}`$
 
@@ -46,7 +45,6 @@ Classical machine learning algorithms (such as XGBoost, LightGBM, Random Forest,
 ```math
 \mathcal{D} = \{(\mathbf{x}_1, y_1), (\mathbf{x}_2, y_2), \dots, (\mathbf{x}_N, y_N)\}, \quad (\mathbf{x}_i \perp\!\!\!\perp \mathbf{x}_j)
 ```
-
 
 In an interconnected smart appliance and utility network, **the I.I.D. assumption is completely invalid**. 
 
@@ -89,7 +87,6 @@ Raw input vectors $`\mathbf{x}_v \in \mathbb{R}^8`$ for each node type $`v`$ are
 \mathbf{h}_v^{(0)} = \text{LeakyReLU}\left(\mathbf{W}_v \mathbf{x}_v + \mathbf{b}_v\right), \quad \mathbf{W}_v \in \mathbb{R}^{128 \times 8}
 ```
 
-
 ### 2. Multi-Relational Message Passing (`HeteroConv`)
 During each convolution layer $`l`$, messages are computed across all incoming relation types $`r = (s, \text{rel}, t)`$:
 
@@ -102,7 +99,6 @@ Target node states aggregate messages from all relational neighbors:
 ```math
 \mathbf{h}_v^{(l)} = \text{Dropout}\left(\text{LeakyReLU}\left(\sum_{r \in \mathcal{R}_v} \text{mean}_{u \in \mathcal{N}_r(v)} \mathbf{m}_{u \to v}^{(l)}\right) + \mathbf{h}_v^{(l-1)}\right)
 ```
-
 
 ### 3. Multi-Task Output Generation
 The enriched node representations $`\mathbf{h}_v^{(L)}`$ feed directly into 4 specialized task heads:
@@ -117,7 +113,6 @@ For any customer $`u`$ and counter-seasonal appliance $`d`$:
 ```math
 P(\text{Cross-Sell Adoption}) = \sigma\left(\mathbf{h}_u^T \mathbf{h}_d\right)
 ```
-
 
 ---
 
@@ -160,7 +155,6 @@ In a multi-task Hetero-GNN, backpropagation computes the gradient of the joint l
 \nabla_{\mathbf{W}} \mathcal{L}_{\text{total}} = \nabla_{\mathbf{W}} \mathcal{L}_{\text{demand}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{maint}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{churn}} + \nabla_{\mathbf{W}} \mathcal{L}_{\text{inv}}
 ```
 
-
 When regression targets (Demand and Inventory) have outputs in the range $`[20, 750]`$, their raw squared error ($`\text{MSE} \approx 100 - 300`$) produces gradients orders of magnitude larger than classification heads ($`\text{BCE} \approx 0.3 - 0.7`$). In an uncalibrated network, the GNN weights adapt exclusively to satisfy demand regression, leaving equipment failure and customer churn predictions under-fitted and poorly calibrated.
 
 ```mermaid
@@ -186,9 +180,9 @@ flowchart TD
 ### The Fine-Tuning Transformation:
 1. **Homoscedastic Task Uncertainty Weighting**:
 
-   ```math
-   \mathcal{L}(\mathbf{W}, s_1, s_2, s_3, s_4) = \sum_{i=1}^4 \left( \frac{1}{2} \exp(-s_i) \mathcal{L}_i + \frac{1}{2} s_i \right)
-   ```
+```math
+\mathcal{L}(\mathbf{W}, s_1, s_2, s_3, s_4) = \sum_{i=1}^4 \left( \frac{1}{2} \exp(-s_i) \mathcal{L}_i + \frac{1}{2} s_i \right)
+```
 
    The network dynamically learns the relative precision $`\exp(-s_i)`$ of each task head. Regression tasks are automatically scaled down by $`\approx \exp(-4.5) \approx 0.011`$, perfectly matching the scale of the classification BCE gradients ($`\approx \exp(-0.5) \approx 0.606`$).
 2. **Empirical Prior Grounding**:
@@ -202,5 +196,4 @@ flowchart TD
    * Failure F1 jumps by **$`+0.157`$** ($`0.540 \to 0.697`$), detecting 432 high-risk units across all 12 calendar regimes.
    * Sleeper Churn F1 jumps by **$`+0.249`$** ($`0.397 \to 0.646`$), eliminating 240 false-positive churn flags.
    * Delivers **₹2.27 Cr Net Operating Profit** at a **7.764x mean / 7.676x aggregate Cost-Efficiency Ratio** (+22.64% savings over reactive baseline).
-
 

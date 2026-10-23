@@ -63,34 +63,34 @@ flowchart TD
 
 1. **`location` Node ($`N = 40`$)**:
 
-   ```math
-   \mathbf{x}_{\text{loc}} = \begin{bmatrix} \text{is\_metro}, & \frac{T_{\text{base}}}{45}, & \text{grid\_stability}, & \text{pop\_density}, & \sin(\theta), & \cos(\theta), & \mu_{\text{cool}}, & \mu_{\text{heat}} \end{bmatrix}^T
-   ```
+```math
+\mathbf{x}_{\text{loc}} = \begin{bmatrix} \text{is\_metro}, & \frac{T_{\text{base}}}{45}, & \text{grid\_stability}, & \text{pop\_density}, & \sin(\theta), & \cos(\theta), & \mu_{\text{cool}}, & \mu_{\text{heat}} \end{bmatrix}^T
+```
 
    * Target ($`y_{\text{demand}}`$): Continuous location servicing demand units.
 
 2. **`device` Node ($`N = 180`$)**:
 
-   ```math
-   \mathbf{x}_{\text{dev}} = \begin{bmatrix} \text{is\_cooling}, & \frac{\text{price}}{60000}, & \frac{\text{margin}}{8000}, & \frac{P_{\text{load}}}{3.5}, & p_{\text{fail}}, & \sin(\theta), & \cos(\theta), & \mu_{\text{stress}} \end{bmatrix}^T
-   ```
+```math
+\mathbf{x}_{\text{dev}} = \begin{bmatrix} \text{is\_cooling}, & \frac{\text{price}}{60000}, & \frac{\text{margin}}{8000}, & \frac{P_{\text{load}}}{3.5}, & p_{\text{fail}}, & \sin(\theta), & \cos(\theta), & \mu_{\text{stress}} \end{bmatrix}^T
+```
 
    * Target 1 ($`y_{\text{power}}`$): Operating power draw (kW).
    * Target 2 ($`y_{\text{failure}}`$): Binary failure risk state ($`0`$ = Healthy, $`1`$ = Failure Imminent).
 
 3. **`resident` Node ($`N = 600`$)**:
 
-   ```math
-   \mathbf{x}_{\text{res}} = \begin{bmatrix} \text{is\_metro}, & \text{app\_active}, & \text{engagement}_{\text{dyn}}, & \frac{\text{tenure}}{48}, & \text{income\_tier}, & \sin(\theta), & \cos(\theta), & \frac{\text{regime\_id}}{2} \end{bmatrix}^T
-   ```
+```math
+\mathbf{x}_{\text{res}} = \begin{bmatrix} \text{is\_metro}, & \text{app\_active}, & \text{engagement}_{\text{dyn}}, & \frac{\text{tenure}}{48}, & \text{income\_tier}, & \sin(\theta), & \cos(\theta), & \frac{\text{regime\_id}}{2} \end{bmatrix}^T
+```
 
    * Target ($`y_{\text{sleeper}}`$): Binary churn / dormancy flag ($`1`$ = Sleeper customer).
 
 4. **`part` Node ($`N = 50`$)**:
 
-   ```math
-   \mathbf{x}_{\text{part}} = \begin{bmatrix} \text{for\_cooling}, & \frac{\text{cost}}{10000}, & \frac{\text{holding\_cost}}{300}, & \frac{\text{stock}}{150}, & \sin(\theta), & \cos(\theta), & \mu_{\text{cool}}, & \mu_{\text{heat}} \end{bmatrix}^T
-   ```
+```math
+\mathbf{x}_{\text{part}} = \begin{bmatrix} \text{for\_cooling}, & \frac{\text{cost}}{10000}, & \frac{\text{holding\_cost}}{300}, & \frac{\text{stock}}{150}, & \sin(\theta), & \cos(\theta), & \mu_{\text{cool}}, & \mu_{\text{heat}} \end{bmatrix}^T
+```
 
    * Target ($`y_{\text{inventory}}`$): Forecasted spare parts replenishment demand units.
 
@@ -110,7 +110,6 @@ To preserve circular calendar continuity (where Month 12 smoothly transitions in
 ```math
 \text{month\_sin} = \sin(\theta_m), \quad \text{month\_cos} = \cos(\theta_m)
 ```
-
 
 ### Seasonal Climate Regimes (India Context)
 | Month ($`m`$) | Season Name | Regime ID | Cooling Multiplier ($`\mu_{\text{cool}}`$) | Heating Multiplier ($`\mu_{\text{heat}}`$) | Physical Mechanism |
@@ -139,7 +138,6 @@ Each node type $`v \in \{\text{resident}, \text{location}, \text{device}, \text{
 \mathbf{h}_v^{(0)} = \text{LeakyReLU}\left(\mathbf{W}_v \mathbf{x}_v + \mathbf{b}_v\right)
 ```
 
-
 ### Layer 2: Heterogeneous Message Passing (`HeteroConv` + `SAGEConv`)
 For $`l \in \{1, \dots, L\}`$ where $`L = 3`$ layers:
 
@@ -154,34 +152,33 @@ Where:
 ### Multi-Task Output Prediction Heads
 1. **Model 1: Spatio-Temporal Demand Regressor**:
 
-   ```math
-   \hat{y}_{\text{demand}} = \mathbf{W}_{d2} \cdot \text{ReLU}\left(\mathbf{W}_{d1} \mathbf{h}_{\text{loc}}^{(L)} + \mathbf{b}_{d1}\right) + b_{d2}
-   ```
+```math
+\hat{y}_{\text{demand}} = \mathbf{W}_{d2} \cdot \text{ReLU}\left(\mathbf{W}_{d1} \mathbf{h}_{\text{loc}}^{(L)} + \mathbf{b}_{d1}\right) + b_{d2}
+```
 
 2. **Model 2A: Appliance Operating Power Draw Regressor**:
 
-   ```math
-   \hat{y}_{\text{power}} = \mathbf{W}_{p2} \cdot \text{ReLU}\left(\mathbf{W}_{p1} \mathbf{h}_{\text{dev}}^{(L)} + \mathbf{b}_{p1}\right) + b_{p2}
-   ```
+```math
+\hat{y}_{\text{power}} = \mathbf{W}_{p2} \cdot \text{ReLU}\left(\mathbf{W}_{p1} \mathbf{h}_{\text{dev}}^{(L)} + \mathbf{b}_{p1}\right) + b_{p2}
+```
 
 3. **Model 2B: Device Failure Risk Classifier**:
 
-   ```math
-   \hat{y}_{\text{failure}} = \sigma\left(\mathbf{W}_{f2} \cdot \text{ReLU}\left(\mathbf{W}_{f1} \mathbf{h}_{\text{dev}}^{(L)} + \mathbf{b}_{f1}\right) + b_{f2}\right)
-   ```
+```math
+\hat{y}_{\text{failure}} = \sigma\left(\mathbf{W}_{f2} \cdot \text{ReLU}\left(\mathbf{W}_{f1} \mathbf{h}_{\text{dev}}^{(L)} + \mathbf{b}_{f1}\right) + b_{f2}\right)
+```
 
 4. **Model 3: Customer Sleeper Churn Classifier**:
 
-   ```math
-   \hat{y}_{\text{sleeper}} = \sigma\left(\mathbf{W}_{s2} \cdot \text{ReLU}\left(\mathbf{W}_{s1} \mathbf{h}_{\text{res}}^{(L)} + \mathbf{b}_{s1}\right) + b_{s2}\right)
-   ```
+```math
+\hat{y}_{\text{sleeper}} = \sigma\left(\mathbf{W}_{s2} \cdot \text{ReLU}\left(\mathbf{W}_{s1} \mathbf{h}_{\text{res}}^{(L)} + \mathbf{b}_{s1}\right) + b_{s2}\right)
+```
 
 5. **Model 4: Spare-Parts Inventory Forecasting Regressor**:
 
-   ```math
-   \hat{y}_{\text{inv}} = \mathbf{W}_{i2} \cdot \text{ReLU}\left(\mathbf{W}_{i1} \mathbf{h}_{\text{part}}^{(L)} + \mathbf{b}_{i1}\right) + b_{i2}
-   ```
-
+```math
+\hat{y}_{\text{inv}} = \mathbf{W}_{i2} \cdot \text{ReLU}\left(\mathbf{W}_{i1} \mathbf{h}_{\text{part}}^{(L)} + \mathbf{b}_{i1}\right) + b_{i2}
+```
 
 ### Link Prediction Head (Counter-Seasonal Cross-Selling)
 To reactivate dormant "Sleeper" cooling HVAC owners during winter months, a bilateral dot-product link predictor scores customer-appliance pairings:
@@ -189,7 +186,6 @@ To reactivate dormant "Sleeper" cooling HVAC owners during winter months, a bila
 ```math
 \text{Score}(u_{\text{resident}}, v_{\text{device}}) = \sigma\left(\langle \mathbf{h}_{u}^{(L)}, \mathbf{h}_{v}^{(L)} \rangle\right)
 ```
-
 
 ### Joint Loss Function
 
