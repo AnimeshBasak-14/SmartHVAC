@@ -1,62 +1,62 @@
-# 07. Report and slides plan
+# 07. Report and slides: what we built and the submission checklist
 
 Submission rules to satisfy: cover page with group number, title, names and enrollment numbers; **first page with each member's name,
-contribution (1 or 2 sentences) and the report pages where it appears (no evaluation without it)**; no code or code screenshots; every
-figure explained in words; a clear recommendation in the conclusion based on the analysis; the data source links; a help file; slides.
+contribution and the report pages where it appears**; no code or code screenshots; every figure explained in words; a clear recommendation in the conclusion based on the analysis;
+the data source links; a help file; slides.
 
-## Report outline
+## The report (`report/HVAC_Service_Planner_Report.docx`, with a PDF copy)
 
-| # | Section | Content | Figures |
-| :--- | :--- | :--- | :--- |
-| 0 | Cover page | Group number [to fill], title, five names and enrollment numbers (Kriti Vajpayee's number [to fill]) | |
-| 0 | Contributions page | One row per member: name, 1 or 2 sentences, page numbers | |
-| 1 | Introduction and problem | HVAC service providers, the three decisions, the product (`01`) | |
-| 2 | Data | The three datasets, links, cleaning, how the churn table is built, limits (`02`) | 1, 2, 3 |
-| 3 | Method | Models and baselines, features, the four demand tests, the churn split, metrics, the tie rule, leakage checks (`03`) | block diagram (draw by hand) |
-| 4 | Results: demand | Table, figures 4 and 5 with explanation | 4, 5 |
-| 5 | Results: failure | Table, figures 6 and 7 | 6, 7 |
-| 6 | Results: churn | Table, figures 8 and 9 | 8, 9 |
-| 7 | The product | Screenshots of the three dashboard tools with a short description (screenshots of the result are allowed, not of code) | dashboard screenshots |
-| 8 | Where XGBoost helps and where it fails | Figure 10 and the heatwave story | 10 |
-| 9 | Conclusion and recommendation | See below | |
-| 10 | Limits and future work | Proxy data; one building; where a graph neural network may help (`05`) | |
-| | References | AI4I 2020 (Matzka, 2020); Online Retail II (Chen, 2019); Chen and Guestrin, "XGBoost" (2016); Hoerl and Kennard, "Ridge regression" (1970); Breiman, "Random Forests" (2001) | |
+| Part | Where |
+| :--- | :--- |
+| Cover page: institute, title, course, Group 1, five names and enrollment numbers, guide | page 1 |
+| Contribution of the group members, with page numbers | page 2 |
+| Abstract, table of contents, list of figures | pages 3 to 9 |
+| Chapters 1 to 10: the ten lifecycle stages, one author per stage | `docs/lifecycle/` |
+| Chapter 11: results and discussion | `report/src/11_Results_and_Discussion.md` |
+| Chapter 12: conclusion and recommendation | `report/src/12_Conclusion_and_Recommendation.md` |
+| Chapter 13: limitations and future work | `report/src/13_Limitations_and_Future_Work.md` |
+| References and data sources | `report/src/14_References.md` |
 
-Under every figure write: what is plotted, what we see (with numbers from `04_RESULTS.md`), and what it means for the service provider.
-The ready-made explanations in `04_RESULTS.md` can be shortened and pasted.
+Every figure has a caption and a paragraph that explains what is plotted, what we see and what it means. The text of chapters 1 to 10 is the same as the documents in `docs/lifecycle/`,
+without the "where to find things in the repository" sections, so the report has no code references.
 
-## Conclusion and recommendation (draft)
+To rebuild after editing any document: `python report/build_report.py`, then run `report/finish_docx.ps1` in PowerShell (it needs Word; it updates the table of contents and the page numbers and writes the PDF).
 
-1. **Demand Planner.** Use XGBoost for normal weather (error 0.07 to 0.08 kW) and the Ridge model above 40 °C, where XGBoost fails (0.34 kW against 0.08 kW).
-2. **Failure Radar.** Use XGBoost or Random Forest with engineered features (PR-AUC about 0.9). Inspecting the top 10% of machines finds about 94% of failures, against 37% for the "most worn tool" rule. Do not use linear models here.
-3. **Retention List.** Use the Ridge (penalised logistic) model: all models tie, so take the simplest. It reaches about twice as many lapsing customers as random contact, so treat the list as a way to prioritise calls, not as a prediction of who will leave.
-4. **Caveat.** These conclusions rest on public stand-in datasets. The next step is to repeat the same tests on a service company's own data.
+## The slides (`report/HVAC_Service_Planner_Presentation.pptx`, with a PDF copy)
 
-## Slides (about 12, every member presents)
+61 slides, 16:9. Every slide has a tag with the stage and the presenter. Most slides are one full-slide figure or one table, and the speaker notes hold two or three sentences to say.
+Rebuild with `python report/build_slides.py`; `report/export_slides.ps1` writes PNG images and a PDF through PowerPoint.
 
-| # | Slide | Content | Suggested presenter |
-| :--- | :--- | :--- | :--- |
-| 1 | Title | Title, group, names | |
-| 2 | The problem | Three decisions of an HVAC service manager | |
-| 3 | The product | HVAC Service Planner: three tools (dashboard screenshot) | |
-| 4 | Data | Three datasets in one table, with links | |
-| 5 | How we test | Unseen data, five seeds, baselines and rules of thumb, no leakage | |
-| 6 | Demand results | Figure 4 | |
-| 7 | The heatwave | Figure 5: where XGBoost fails | |
-| 8 | Failure results | Figure 6 | |
-| 9 | Churn results | Figure 8 | |
-| 10 | Which model where | Figure 10 and the recommendation table | |
-| 11 | Live demo | Dashboard: a hot day, the inspection list, the call list | |
-| 12 | Limits and future work | Stand-in data; where a graph neural network may help | |
+| Slides | Stage | Presenter |
+| :--- | :--- | :--- |
+| 1 to 5 | Title, lifecycle map, product, task table, rule of thumb | Kriti Vajpayee |
+| 6 to 10 | Data collection | Kriti Vajpayee |
+| 11 to 14 | Data cleaning and preprocessing | Dhruv Aggarwal |
+| 15 to 20 | Exploratory data analysis | Dhruv Aggarwal |
+| 21 to 25 | Feature engineering | Ankit Kumar |
+| 26 to 29 | Model selection | Ankit Kumar |
+| 30 to 34 | Model training | Animesh Basak |
+| 35 to 46 | Model evaluation and tuning | Animesh Basak |
+| 47 to 51 | Model deployment | Sourav Kumar Boro |
+| 52 to 56 | Monitoring and maintenance | Sourav Kumar Boro |
+| 57 to 61 | Recommendation, limits, conclusion, references | Whole group |
 
-Assign presenters in the group chat, and let every member explain at least one figure and one limit. Rehearse once with a timer.
-Have screenshots of the dashboard on the slides in case the live demo fails.
+The deck is long on purpose. For a 15 to 20 minute talk, pick about 25 slides and keep the rest as backup for questions.
+
+## Conclusion and recommendation (as in the report)
+
+1. **Failure Radar first.** Use XGBoost or Random Forest to rank machines (PR-AUC about 0.9). Inspecting the top 10% finds about 94% of failures, against 36% for the "most worn tool" rule.
+2. **Demand Planner with the heatwave safeguard.** XGBoost in ordinary weather (error 0.07 to 0.08 kW), Ridge at 40 °C and above (0.08 kW, against 0.34 kW for XGBoost).
+3. **Retention List as a low-cost aid.** Use the Ridge (penalised logistic) model. All models tie, and the list reaches about twice as many lapsing customers as random contact.
+4. **Monitoring from day one**, and a four-week pilot on the company's own data before relying on any score.
 
 ## Checklist
 
-- [ ] Report PDF with cover page, contributions page (names, 1 or 2 sentences, page numbers), explanations under every figure, recommendation, references, no code
-- [ ] Slides
+- [x] Report with cover page, contributions page (names, contribution, page numbers), explanations under every figure, recommendation, references, no code
+- [x] Slides
+- [ ] Read the contribution text on page 2 of the report and edit it if it does not match what each member did (it is our draft)
+- [ ] Check the Kaggle link opens and note its licence
 - [ ] Code: the project folder without `.venv`
 - [ ] Data source links (in `README.md`, `HELP.md` and the report)
-- [ ] Help file (`HELP.md`)
-- [ ] Fill in: group number, Kriti Vajpayee's enrollment number, check the Kaggle link opens
+- [x] Help file (`HELP.md`)
+- [ ] Delete the older `SmartHVAC_*` files in `report/` if they are no longer needed

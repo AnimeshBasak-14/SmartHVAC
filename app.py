@@ -39,22 +39,16 @@ def churn_snapshot():
     return snaps[config.TEST_CUTOFF]
 
 
-@st.cache_data
-def load_summary():
-    return pd.read_csv(config.RESULTS_DIR / "summary_mean_std.csv")
-
-
 bundle = load_bundle()
 st.title("HVAC Service Planner")
-st.caption("Decision support for an HVAC service provider: plan demand, inspect the right machines, call the right customers. "
-           "Models: Ridge regression and XGBoost, trained and tested on public datasets (see the About tab).")
+st.caption("Decision support for an HVAC service provider: plan demand, inspect the right machines, call the right customers.")
 if bundle is None:
     st.error("No trained models found. Run `python run_all.py` first.")
     st.stop()
 
 hvac, ai4i, invoices = load_tables()
 RIDGE, XGB = "Ridge (engineered features)", "XGBoost (engineered features)"
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Demand Planner", "Failure Radar", "Retention List", "How good is it?", "About"])
+tab1, tab2, tab3 = st.tabs(["Demand Planner", "Failure Radar", "Retention List"])
 
 # ----------------------------------------------------------------------------- 1. demand
 with tab1:
@@ -119,7 +113,7 @@ with tab2:
                      .rename(columns={"risk": "risk %"}), hide_index=True)
         found = sample.sort_values("risk", ascending=False).head(50)["failure"].sum()
         st.caption(f"Inspecting the top 10% (50 machines) would catch {found} of the {int(sample['failure'].sum())} failures in this sample. "
-                   "(The model was trained on all 10,000 machines, so this list is an illustration; honest test scores are in the next tab.)")
+                   "(The model was trained on all 10,000 machines, so this list is an illustration; honest test scores are in the report and in RESULTS_SUMMARY.md.)")
 
 # ----------------------------------------------------------------------------- 3. retention
 with tab3:
@@ -135,38 +129,3 @@ with tab3:
     reached = snap.sort_values("lapse_risk", ascending=False).head(n)["lapsed"].sum() / max(1, snap["lapsed"].sum())
     st.caption(f"Contacting these {n} of {len(snap)} active customers reaches {reached:.0%} of those who actually lapsed "
                f"(random contact would reach {n / len(snap):.0%}). Expect about 2x better than random, not 10x: churn is hard to predict from purchase history alone.")
-
-# ----------------------------------------------------------------------------- 4. results
-with tab4:
-    st.subheader("How good is it? Scores on data the models never saw")
-    s = load_summary()
-    choice = pd.read_csv(config.RESULTS_DIR / "model_choice.csv")
-    st.markdown("**Which model is best, per task** (best average; ties within one standard deviation go to the simpler model)")
-    st.dataframe(choice[["pillar", "split", "metric", "pick"]], hide_index=True)
-    for fig, caption in (("04_p1_model_comparison.png", "Pillar 1: demand forecast error"), ("05_p1_heatwave_extrapolation.png", "Heatwave: where XGBoost fails"),
-                         ("06_p2_failure_results.png", "Pillar 2: failure prediction"), ("08_p3_churn_results.png", "Pillar 3: lapse prediction"),
-                         ("10_xgboost_vs_ridge.png", "XGBoost vs Ridge")):
-        if (config.FIG_DIR / fig).exists():
-            st.image(str(config.FIG_DIR / fig), caption=caption)
-    with st.expander("Full results table (mean ± std over 5 seeds)"):
-        st.dataframe(s, hide_index=True)
-
-# ----------------------------------------------------------------------------- 5. about
-with tab5:
-    st.markdown(f"""
-**What this is.** A decision-support tool for an HVAC service provider (for example Aire Serv) with three jobs: plan demand, inspect the right
-machines, and keep customers.
-
-**Data** (all public; no company data):
-* Pillar 1 - hourly HVAC power, weather and indoor temperature: [{config.SOURCES['hvac']}]({config.SOURCES['hvac']})
-* Pillar 2 - AI4I 2020 predictive maintenance (10,000 machines, 3.4% failures; synthetic data made to resemble industry): [{config.SOURCES['ai4i']}]({config.SOURCES['ai4i']})
-* Pillar 3 - Online Retail II (UK shop transactions, 2009-2011): [{config.SOURCES['retail']}]({config.SOURCES['retail']})
-
-**Limits.** The datasets are proxies for HVAC, not real service-company records. The demand data is regular and looks simulated.
-Churn is "buys nothing for 90 days" in a retail shop. Treat the numbers as a demonstration of the method.
-
-**Future work.** A graph neural network might help where a flat table is not enough, for example linking customers through the products they
-share (churn and cross-sell) or linking sites that share a power grid. See docs/05_FUTURE_WORK.md. We have not shown that it does.
-
-Models trained: {bundle['trained_at']}.
-""")

@@ -1,0 +1,444 @@
+{
+ "hvac": {
+  "rows": 8760,
+  "start": "2025-01-01 00:00:00",
+  "end": "2025-12-31 23:00:00",
+  "power": {
+   "min": 0.1,
+   "mean": 1.9165085616438358,
+   "max": 4.012,
+   "std": 1.128584569357876
+  },
+  "ambient": {
+   "min": 6.06,
+   "mean": 28.117172374429224,
+   "max": 50.38,
+   "std": 9.37689979356301
+  },
+  "indoor": {
+   "min": 19.07,
+   "mean": 22.75757191780822,
+   "max": 25.81,
+   "std": 1.550913907499354
+  },
+  "humidity": {
+   "min": 15.0,
+   "mean": 54.63436073059361,
+   "max": 98.0,
+   "std": 20.558755369828297
+  },
+  "mode_counts": {
+   "Cooling": 4886,
+   "Idle": 2237,
+   "Heating": 1637
+  },
+  "mode_share": {
+   "Cooling": 0.5578,
+   "Idle": 0.2554,
+   "Heating": 0.1869
+  },
+  "power_by_mode": {
+   "Cooling": {
+    "min": 1.625,
+    "mean": 2.732979533360622,
+    "max": 4.012,
+    "std": 0.46932921621622087
+   },
+   "Heating": {
+    "min": 1.283,
+    "mean": 1.8433188759926695,
+    "max": 2.559,
+    "std": 0.25961289071168003
+   },
+   "Idle": {
+    "min": 0.1,
+    "mean": 0.18675189986589183,
+    "max": 0.431,
+    "std": 0.06998180604480206
+   }
+  },
+  "ambient_by_mode": {
+   "Cooling": {
+    "min": 27.0,
+    "mean": 35.04210397052803,
+    "max": 50.38,
+    "std": 5.275258086138545
+   },
+   "Heating": {
+    "min": 6.06,
+    "mean": 14.19295662797801,
+    "max": 19.0,
+    "std": 3.0794575588761854
+   },
+   "Idle": {
+    "min": 19.0,
+    "mean": 23.181421546714347,
+    "max": 27.0,
+    "std": 2.3642923655398884
+   }
+  },
+  "hours_at_or_above_40": 824,
+  "months_with_40_plus": [
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "corr": {
+   "power_vs_abs_gap": 0.8517618077385634,
+   "power_vs_ambient": 0.6271059927542949,
+   "power_vs_hour": 0.14086611814183833,
+   "power_vs_humidity": 0.16102999730858056,
+   "power_vs_indoor": 0.524595800983477
+  },
+  "monthly_mean_power": {
+   "1": 1.482,
+   "2": 0.986,
+   "3": 1.075,
+   "4": 2.185,
+   "5": 2.981,
+   "6": 3.244,
+   "7": 2.788,
+   "8": 2.453,
+   "9": 2.038,
+   "10": 1.407,
+   "11": 0.97,
+   "12": 1.322
+  },
+  "monthly_mean_ambient": {
+   "1": 14.98,
+   "2": 19.11,
+   "3": 26.04,
+   "4": 33.03,
+   "5": 39.5,
+   "6": 40.92,
+   "7": 33.99,
+   "8": 32.44,
+   "9": 30.95,
+   "10": 27.98,
+   "11": 22.03,
+   "12": 16.03
+  },
+  "hourly_mean_power": {
+   "0": 1.699,
+   "1": 1.586,
+   "2": 1.539,
+   "3": 1.48,
+   "4": 1.555,
+   "5": 1.625,
+   "6": 1.731,
+   "7": 1.823,
+   "8": 1.873,
+   "9": 1.979,
+   "10": 2.03,
+   "11": 2.087,
+   "12": 2.14,
+   "13": 2.182,
+   "14": 2.226,
+   "15": 2.214,
+   "16": 2.213,
+   "17": 2.121,
+   "18": 2.087,
+   "19": 2.058,
+   "20": 2.065,
+   "21": 1.976,
+   "22": 1.89,
+   "23": 1.817
+  },
+  "daily_peak_kw": {
+   "min": 1.857,
+   "mean": 2.8573287671232874,
+   "max": 4.012,
+   "std": 0.5956361788451906
+  },
+  "daily_energy_kwh": {
+   "min": 17.816,
+   "mean": 45.99620547945206,
+   "max": 78.916,
+   "std": 18.787158137793895
+  },
+  "power_floor_rows": 368,
+  "mode_rule": {
+   "cooling_min_ambient": 27.0,
+   "heating_max_ambient": 19.0
+  }
+ },
+ "ai4i": {
+  "rows": 10000,
+  "failures": 339,
+  "failure_rate": 0.0339,
+  "type_counts": {
+   "L": 6000,
+   "M": 2997,
+   "H": 1003
+  },
+  "failure_rate_by_type": {
+   "H": 0.0209,
+   "L": 0.0392,
+   "M": 0.0277
+  },
+  "failure_modes": {
+   "TWF": 46,
+   "HDF": 115,
+   "PWF": 95,
+   "OSF": 98,
+   "RNF": 19
+  },
+  "failures_with_no_mode_flag": 9,
+  "rows_with_more_than_one_mode": 24,
+  "numeric": {
+   "air_temp_k": {
+    "min": 295.3,
+    "mean": 300.00493,
+    "max": 304.5,
+    "std": 2.0002586829157516
+   },
+   "process_temp_k": {
+    "min": 305.7,
+    "mean": 310.00555999999995,
+    "max": 313.8,
+    "std": 1.4837342191657208
+   },
+   "rpm": {
+    "min": 1168.0,
+    "mean": 1538.7761,
+    "max": 2886.0,
+    "std": 179.2840959134266
+   },
+   "torque_nm": {
+    "min": 3.8,
+    "mean": 39.986909999999995,
+    "max": 76.6,
+    "std": 9.968933725121337
+   },
+   "tool_wear_min": {
+    "min": 0.0,
+    "mean": 107.951,
+    "max": 253.0,
+    "std": 63.65414663663636
+   }
+  },
+  "corr_with_failure": {
+   "air_temp_k": 0.08255568978324,
+   "process_temp_k": 0.03594597332977694,
+   "rpm": -0.04418755973437546,
+   "torque_nm": 0.19132077505949363,
+   "tool_wear_min": 0.10544821891959553,
+   "power_w": 0.17603907812460837,
+   "temp_gap_k": -0.11167631166572765,
+   "wear_x_torque": 0.1904268334129707
+  },
+  "power_w": {
+   "min": 1148.4406104462846,
+   "mean": 6279.74495325343,
+   "max": 10469.923004765633,
+   "std": 1067.4182951178793
+  },
+  "temp_gap_k": {
+   "min": 7.599999999999966,
+   "mean": 10.000630000000001,
+   "max": 12.100000000000023,
+   "std": 1.0010938127779023
+  },
+  "failure_rate_top_decile_torque_nm": 0.18244575936883628,
+  "failure_rate_top_decile_tool_wear_min": 0.12632594021215043,
+  "failure_rate_top_decile_power_w": 0.169,
+  "failure_rate_lowest_rpm_decile": 0.16700201207243462
+ },
+ "retail": {
+  "raw_lines": 1067371,
+  "kept_lines": 824293,
+  "dropped_lines": 243078,
+  "dropped_share": 0.2277352485686795,
+  "invoices": 44870,
+  "purchase_invoices": 36969,
+  "return_invoices": 7901,
+  "return_share_of_invoices": 0.17608647203030978,
+  "customers": 5939,
+  "start": "2009-12-01 07:45:00",
+  "end": "2011-12-09 12:50:00",
+  "uk_share_of_invoices": 0.9026075328727435,
+  "countries": 41,
+  "top_countries": {
+   "United Kingdom": 40500,
+   "Germany": 1095,
+   "France": 738,
+   "EIRE": 727,
+   "Netherlands": 249
+  },
+  "invoices_per_customer": {
+   "min": 1.0,
+   "mean": 6.289384144266758,
+   "max": 398.0,
+   "std": 13.009405882310157,
+   "p5": 1.0,
+   "p25": 1.0,
+   "p50": 3.0,
+   "p75": 7.0,
+   "p95": 21.0
+  },
+  "spend_per_customer": {
+   "min": 2.95,
+   "mean": 3018.6167366451173,
+   "max": 608821.65,
+   "std": 14737.731039978002,
+   "p5": 114.10849999999999,
+   "p25": 348.7625,
+   "p50": 898.915,
+   "p75": 2307.09,
+   "p95": 9535.335999999987
+  },
+  "single_purchase_customers_share": 0.27611432460020413,
+  "invoice_value": {
+   "min": 0.38,
+   "mean": 479.9542637885797,
+   "max": 168469.6,
+   "std": 1374.9905731162687,
+   "p5": 36.758,
+   "p25": 160.8,
+   "p50": 305.25,
+   "p75": 489.26,
+   "p95": 1253.7799999999997
+  },
+  "monthly_invoices": {
+   "2009-12": 1512,
+   "2010-01": 1011,
+   "2010-02": 1104,
+   "2010-03": 1524,
+   "2010-04": 1329,
+   "2010-05": 1377,
+   "2010-06": 1497,
+   "2010-07": 1381,
+   "2010-08": 1293,
+   "2010-09": 1689,
+   "2010-10": 2133,
+   "2010-11": 2587,
+   "2010-12": 1400,
+   "2011-01": 987,
+   "2011-02": 997,
+   "2011-03": 1321,
+   "2011-04": 1149,
+   "2011-05": 1555,
+   "2011-06": 1393,
+   "2011-07": 1331,
+   "2011-08": 1280,
+   "2011-09": 1755,
+   "2011-10": 1929,
+   "2011-11": 2657,
+   "2011-12": 778
+  },
+  "monthly_active_customers": {
+   "2009-12": 955,
+   "2010-01": 720,
+   "2010-02": 772,
+   "2010-03": 1057,
+   "2010-04": 942,
+   "2010-05": 966,
+   "2010-06": 1041,
+   "2010-07": 928,
+   "2010-08": 911,
+   "2010-09": 1145,
+   "2010-10": 1497,
+   "2010-11": 1607,
+   "2010-12": 885,
+   "2011-01": 741,
+   "2011-02": 758,
+   "2011-03": 974,
+   "2011-04": 856,
+   "2011-05": 1056,
+   "2011-06": 991,
+   "2011-07": 949,
+   "2011-08": 935,
+   "2011-09": 1266,
+   "2011-10": 1364,
+   "2011-11": 1664,
+   "2011-12": 615
+  },
+  "snapshots": {
+   "2010-06-01": {
+    "active_customers": 2033,
+    "lapse_rate": 0.44171175602557794
+   },
+   "2010-09-01": {
+    "active_customers": 1947,
+    "lapse_rate": 0.3148433487416538
+   },
+   "2010-12-01": {
+    "active_customers": 2887,
+    "lapse_rate": 0.5805334257014202
+   },
+   "2011-03-01": {
+    "active_customers": 1717,
+    "lapse_rate": 0.43389633080955153
+   },
+   "2011-06-01": {
+    "active_customers": 1978,
+    "lapse_rate": 0.4368048533872599
+   },
+   "2011-09-09": {
+    "active_customers": 1907,
+    "lapse_rate": 0.31095962244362874
+   }
+  },
+  "total_train_rows": 10562,
+  "test_cutoff_rows": 1907,
+  "corr_with_lapse_test_cutoff": {
+   "recency_days": 0.15803245563242405,
+   "frequency": -0.21826259764338804,
+   "monetary": -0.11835149906008666,
+   "tenure_days": -0.155099334570436,
+   "avg_order_value": -0.0487185248347697,
+   "avg_gap_days": 0.36493205088079783,
+   "avg_items": -0.06666884236126266,
+   "avg_products": -0.05554739520251824,
+   "orders_last_90d": -0.1970555378371839,
+   "orders_prev_90d": -0.23379156209758029,
+   "order_trend": 0.08305620894120419,
+   "return_share": -0.11064773155982101,
+   "is_uk": 0.012130674105058747,
+   "log_monetary": -0.33283486138623836,
+   "log_frequency": -0.34895231154630796,
+   "log_avg_order_value": -0.1347199435543618
+  }
+ },
+ "timing": {
+  "fit_seconds": {
+   "demand|Linear regression (engineered features)": 0.046,
+   "demand|Random Forest (engineered features)": 1.147,
+   "demand|Ridge (basic features)": 0.026,
+   "demand|Ridge (engineered features)": 0.022,
+   "demand|XGBoost (basic features)": 0.743,
+   "demand|XGBoost (engineered features)": 0.758,
+   "failure|Logistic regression (engineered features)": 0.035,
+   "failure|Random Forest (engineered features)": 0.714,
+   "failure|Ridge (basic features)": 0.132,
+   "failure|Ridge (engineered features)": 0.197,
+   "failure|XGBoost (basic features)": 0.487,
+   "failure|XGBoost (engineered features)": 0.447,
+   "churn|Logistic regression (engineered features)": 0.045,
+   "churn|Random Forest (engineered features)": 0.983,
+   "churn|Ridge (basic features)": 0.147,
+   "churn|Ridge (engineered features)": 0.28,
+   "churn|XGBoost (basic features)": 0.478,
+   "churn|XGBoost (engineered features)": 0.626
+  },
+  "predict_ms_single_row": {
+   "demand|Ridge (engineered features)": 1.41,
+   "demand|XGBoost (engineered features)": 1.82,
+   "failure|Ridge (engineered features)": 1.67,
+   "failure|XGBoost (engineered features)": 2.27,
+   "churn|Ridge (engineered features)": 1.92,
+   "churn|XGBoost (engineered features)": 2.38
+  },
+  "model_file_mb": 1.38
+ },
+ "seeds": [
+  42,
+  43,
+  44,
+  45,
+  46
+ ]
+}

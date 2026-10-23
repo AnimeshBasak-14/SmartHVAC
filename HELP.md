@@ -22,8 +22,10 @@ pip install -r requirements.txt
 | Command | What it does | Time |
 | :--- | :--- | :--- |
 | `python run_all.py --quick` | Whole pipeline with one random seed. Use it to check that the install works. Writes to `hvac_ml/outputs/quick_check/`, so it never overwrites the real results. | about 2 minutes |
-| `python run_all.py` | Full experiment (5 seeds): trains and tests all models for the three pillars, writes tables, figures and the saved models | about 5 to 8 minutes |
-| `python -m pytest -q hvac_ml/tests` | 14 automatic checks (data sizes, no look-ahead leakage, no train/test overlap, metrics) | about 1 minute |
+| `python run_all.py` | Full experiment (5 seeds): trains and tests all models for the three pillars, writes tables, figures and the saved models | about 11 minutes |
+| `python -m pytest -q hvac_ml/tests` | 17 automatic checks (data sizes, no look-ahead leakage, no train/test overlap, metrics, monitoring functions) | about 1 minute |
+| `python -m hvac_ml.report_figures` | Redraws the 52 report and slide figures into `hvac_ml/outputs/figures/report/` (needs the full run first) | about 3 minutes |
+| `python report/build_report.py`, `python report/build_slides.py` | Rebuild the Word report and the slides from the documents, tables and figures | under a minute |
 | `streamlit run app.py` | Opens the dashboard in your browser (<http://localhost:8501>). Run `run_all.py` first. | instant |
 
 Results are written to `hvac_ml/outputs/`:
@@ -31,7 +33,7 @@ Results are written to `hvac_ml/outputs/`:
 * `results/RESULTS_SUMMARY.md`: all scores as tables (mean ± standard deviation over seeds)
 * `results/summary_mean_std.csv`, `all_runs_by_seed.csv`: the same numbers as CSV files
 * `results/model_choice.csv`: which model is chosen for each test, and which models tie
-* `figures/`: ten PNG figures for the report and slides
+* `figures/`: ten PNG figures from the main run, and `figures/report/` with the figures for the report and slides
 * `models/hvac_models.joblib`: the trained models used by the dashboard
 * `run_log.txt`: the log of the last run
 
@@ -43,8 +45,7 @@ Results are written to `hvac_ml/outputs/`:
 2. **Failure Radar.** Set a machine's sensor readings to see its failure risk and whether it is above the alert threshold. The table lists the 15
    highest-risk machines in a random sample of 500.
 3. **Retention List.** Choose how many customers your team can contact. The table shows the active customers most likely to buy nothing in the next 90 days.
-4. **How good is it?** The scores on data the models never saw, and the figures.
-5. **About.** Data sources, limits and future work.
+The scores on data the models never saw are not shown in the dashboard. They are in `hvac_ml/outputs/results/RESULTS_SUMMARY.md` and in the report.
 
 ## 5. Changing the settings
 

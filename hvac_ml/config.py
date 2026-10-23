@@ -51,3 +51,7 @@ XGB_CLF = dict(n_estimators=300, max_depth=3, learning_rate=0.05, subsample=0.8,
 RF = dict(n_estimators=300, min_samples_leaf=5)                  # Random Forest (classic ML baseline)
 RIDGE_ALPHAS = [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]   # chosen by cross-validation on the training data
 LOGISTIC_C = [0.01, 0.1, 1.0, 10.0, 100.0]                    # same idea for the L2 (ridge-type) classifier
+
+# ---------------------------------------------------------------- monitoring thresholds (stage 10)
+PSI_WARN, PSI_ALERT = 0.10, 0.25       # Population Stability Index: moderate and large shift of an input
+ERROR_WARN_RATIO, ERROR_ALERT_RATIO = 1.5, 2.0   # recent error divided by the error measured in testing

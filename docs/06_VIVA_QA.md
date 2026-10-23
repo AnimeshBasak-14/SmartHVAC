@@ -50,7 +50,7 @@ On hours it never saw, XGBoost's average error is 0.07 to 0.08 kW (average load 
 
 **Q11. Pillar 2: how good is the failure model?**
 XGBoost reaches a PR-AUC of 0.89 and Random Forest 0.91 (they tie); the rule "most worn tool first" scores 0.12 and a random guess 0.034. Inspecting the top 10% of machines
-finds about 94% of failures with XGBoost, against 37% with the wear rule. Ridge and logistic regression reach only 0.49, because failures depend on thresholds that a straight line cannot represent.
+finds about 94% of failures with XGBoost, against 36% with the wear rule. Ridge and logistic regression reach only 0.49, because failures depend on thresholds that a straight line cannot represent.
 
 **Q12. Pillar 3: how good is the churn model?**
 ROC-AUC of 0.77 to 0.78 for all models (Ridge, XGBoost, Random Forest and logistic regression), against 0.61 for the recency rule. Contacting the 10% of active customers with the highest risk reaches about 20% of those who lapse, twice as many as random contact.
@@ -82,3 +82,27 @@ heatwave failure, which comes from how trees extrapolate.
 
 **Q19. What is the biggest weakness of the project?**
 The datasets are proxies. The scores say the method works; they do not say how much a real HVAC company would gain.
+
+## Deployment and monitoring
+
+**Q20. How does the dashboard decide between XGBoost and Ridge for demand?**
+For each hour it checks the outdoor temperature. At 40 °C or above, or outside the range seen in training (6.1 to 50.4 °C), it uses Ridge. Otherwise it uses XGBoost. It shows both curves and says how many hours used the safeguard.
+
+**Q21. The tie rule picks Random Forest for failure and logistic regression for churn. Why does the dashboard use XGBoost and Ridge?**
+Both choices are inside the tie band: XGBoost scores 0.893 against 0.912 for Random Forest on failure, and Ridge scores 0.777 against 0.775 for logistic regression on churn, with standard deviations of 0.04 and 0.03.
+We kept XGBoost and Ridge because they are the two models the group set out to compare. The strict rule would swap them, and the stage 6 document says so.
+
+**Q22. What do you monitor after deployment?**
+Three things: input drift (Population Stability Index and the Kolmogorov-Smirnov test, warning at 0.10 and alert at 0.25), the monthly demand error against the tested 0.065 kW (warning at 1.5 times, alert at 2 times), and the predicted against actual positive rate for failure and churn.
+
+**Q23. Does a drift alert mean we must retrain?**
+No. PSI tells us the inputs moved, not that the model got worse. Months 10 to 12 alert against months 1 to 9 only because of the season. We retrain when the error check fires, and we use the safeguard when temperatures leave the training range.
+
+**Q24. When do you retrain?**
+Demand before and after the cooling season, churn each quarter with a new cutoff, failure after 100 new logged failures.
+
+**Q25. Are the lists in the dashboard test results?**
+No. The final models were trained on all rows, so the Failure Radar and Retention List examples are illustrations. The honest scores are in stage 8 and in `RESULTS_SUMMARY.md`.
+
+**Q26. What did you do about the odd quirks in the data?**
+We kept them and reported them in stage 3: monthly temperature steps in the HVAC file, 368 idle hours at exactly 0.10 kW, nine failures with no cause flag, and 100 churn rows on the 90-day boundary.

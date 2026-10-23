@@ -1,0 +1,13 @@
+Product ID,Type,Torque (Nm),Speed (rpm),Tool wear (min),Risk (%),Alert,Actually failed
+L51822,L,54.6,1238,226,99.6,inspect,yes
+L49778,L,67.5,1320,20,96.4,inspect,yes
+M20475,M,71.3,1257,122,96.0,inspect,yes
+L53705,L,73.6,1312,49,95.2,inspect,yes
+L51800,L,52.6,1336,172,94.6,inspect,yes
+M19287,M,48.9,1379,107,94.1,inspect,yes
+L51801,L,51.0,1341,174,94.1,inspect,yes
+M23874,M,61.3,1340,207,93.6,inspect,yes
+M21659,M,12.2,2636,100,93.0,inspect,yes
+L51724,L,55.1,1349,187,92.7,inspect,yes
+L48763,L,61.0,1310,189,89.7,inspect,yes
+L54939,L,59.2,1272,198,89.4,inspect,yes

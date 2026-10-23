@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from hvac_ml import config, data, pillar1_demand as p1, pillar2_failure as p2, pillar3_churn as p3
+from hvac_ml import monitoring
 from hvac_ml.common import best_f1_threshold, classification_metrics, regression_metrics, top_share
 
 
@@ -126,3 +127,26 @@ def test_quick_end_to_end_demand_and_failure(hvac, ai4i, monkeypatch):
     best = r2[r2["model"] == "XGBoost (engineered features)"]["pr_auc"].iloc[0]
     rule = r2[r2["model"] == "Reference: most worn tool first"]["pr_auc"].iloc[0]
     assert best > 3 * rule                                          # the model clearly beats the rule of thumb
+
+
+# ----------------------------------------------------------------------------- monitoring
+def test_psi_is_small_for_the_same_distribution_and_large_for_a_shift():
+    rng = np.random.default_rng(0)
+    a, b, shifted = rng.normal(0, 1, 5000), rng.normal(0, 1, 5000), rng.normal(1.5, 1, 5000)
+    assert monitoring.psi(a, b) < 0.05
+    assert monitoring.psi(a, shifted) > config.PSI_ALERT
+    assert monitoring.status_from_psi(0.30) == "alert" and monitoring.status_from_psi(0.15) == "warning" and monitoring.status_from_psi(0.01) == "ok"
+
+
+def test_drift_table_flags_the_column_that_moved():
+    rng = np.random.default_rng(1)
+    ref = pd.DataFrame({"stable": rng.normal(size=2000), "moved": rng.normal(size=2000)})
+    new = pd.DataFrame({"stable": rng.normal(size=2000), "moved": rng.normal(2.0, 1, size=2000)})
+    table = monitoring.drift_table(ref, new, ["stable", "moved"]).set_index("feature")
+    assert table.loc["stable", "status"] == "ok" and table.loc["moved", "status"] == "alert"
+
+
+def test_performance_status_uses_the_ratio_to_the_tested_error():
+    assert monitoring.performance_status(0.07, 0.07)[0] == "ok"
+    assert monitoring.performance_status(0.11, 0.07)[0] == "warning"
+    assert monitoring.performance_status(0.20, 0.07)[0] == "alert"

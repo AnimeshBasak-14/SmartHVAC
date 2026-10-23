@@ -1,6 +1,6 @@
 # HVAC Service Planner
 
-CSC-505 group project. **Machine learning for an HVAC service provider** (for example a franchise such as Aire Serv).
+CSC-505 Machine Learning, Group 1, IIT Roorkee. **Machine learning for an HVAC service provider** (for example a franchise such as Aire Serv).
 
 We built a small decision-support dashboard with three tools. Each tool is a model plus a ranked list a manager can act on:
 
@@ -18,7 +18,7 @@ We compare **Ridge regression** and **XGBoost** with a statistical baseline (lin
 | Pillar | Best result on unseen data | What a company does today (rule of thumb) |
 | :--- | :--- | :--- |
 | 1. Demand | XGBoost: average error 0.07 to 0.08 kW. In a heatwave (above 40 °C) the linear model is best: 0.08 kW, against 0.34 kW for XGBoost | Average load for that hour: 0.9 to 1.6 kW error |
-| 2. Failure | Random Forest and XGBoost tie (PR-AUC 0.91 and 0.89). Inspecting the top 10% of machines finds **94%** of failures | "Most worn tool first": PR-AUC 0.12, finds 37% |
+| 2. Failure | Random Forest and XGBoost tie (PR-AUC 0.91 and 0.89). Inspecting the top 10% of machines finds **94%** of failures | "Most worn tool first": PR-AUC 0.12, finds 36% |
 | 3. Churn | All models tie at ROC-AUC 0.77 to 0.78. Calling the top 10% reaches about **20%** of the customers who lapse, twice as many as random | "Longest since last purchase": ROC-AUC 0.61, reaches 16% |
 
 * **No model is best everywhere.** XGBoost (tied with Random Forest) wins failure prediction, and XGBoost wins normal-weather demand. A plain linear model wins heatwave demand. For churn, complexity buys nothing.
@@ -26,8 +26,27 @@ We compare **Ridge regression** and **XGBoost** with a statistical baseline (lin
 * **Churn is hard to predict from purchase history alone.** The best models find about twice as many lapsing customers as random contact.
 * **The datasets are stand-ins** (simulated power data, machine-tool failures, an online shop). The scores show the method works, not what a real company would gain.
 
-Full tables are in [docs/04_RESULTS.md](docs/04_RESULTS.md). A graph neural network was tried in an earlier version; it did not beat a simple model on our data, so it now appears only in
-[docs/05_FUTURE_WORK.md](docs/05_FUTURE_WORK.md).
+## Recommendation
+
+Pilot the Failure Radar first and the Demand Planner (always with the heatwave safeguard) second, on the company's own data. Use the Retention List as a low-cost aid and keep its model simple. Run the monitoring checks from the first day.
+
+## Documentation: one document per lifecycle stage
+
+| Stage | Document | Written by |
+| :--- | :--- | :--- |
+| 1 | [Problem definition](docs/lifecycle/01_Problem_Definition.md) | Kriti Vajpayee |
+| 2 | [Data collection](docs/lifecycle/02_Data_Collection.md) | Kriti Vajpayee |
+| 3 | [Data cleaning and preprocessing](docs/lifecycle/03_Data_Cleaning_and_Preprocessing.md) | Dhruv Aggarwal |
+| 4 | [Exploratory data analysis](docs/lifecycle/04_Exploratory_Data_Analysis.md) | Dhruv Aggarwal |
+| 5 | [Feature engineering](docs/lifecycle/05_Feature_Engineering.md) | Ankit Kumar |
+| 6 | [Model selection](docs/lifecycle/06_Model_Selection.md) | Ankit Kumar |
+| 7 | [Model training](docs/lifecycle/07_Model_Training.md) | Animesh Basak |
+| 8 | [Model evaluation and tuning](docs/lifecycle/08_Model_Evaluation_and_Tuning.md) | Animesh Basak |
+| 9 | [Model deployment](docs/lifecycle/09_Model_Deployment.md) | Sourav Kumar Boro |
+| 10 | [Monitoring and maintenance](docs/lifecycle/10_Monitoring_and_Maintenance.md) | Sourav Kumar Boro |
+
+More: [future work](docs/05_FUTURE_WORK.md) (where a graph neural network might help), [viva questions](docs/06_VIVA_QA.md), [submission checklist](docs/07_REPORT_AND_SLIDES_PLAN.md) and the help file [HELP.md](HELP.md).
+The report and the slides are in `report/`.
 
 ## Quick start
 
@@ -37,8 +56,8 @@ python -m venv .venv
 pip install -r requirements.txt
 
 python run_all.py --quick                 # check that everything works (about 2 minutes)
-python run_all.py                         # full experiment, 5 seeds, writes tables, figures and models
-python -m pytest -q hvac_ml/tests         # 14 automatic checks
+python run_all.py                         # full experiment, 5 seeds, writes tables, figures and models (about 11 minutes)
+python -m pytest -q hvac_ml/tests         # 17 automatic checks
 streamlit run app.py                      # open the dashboard
 ```
 
@@ -52,6 +71,8 @@ More detail and troubleshooting: [HELP.md](HELP.md).
 | 2 | UCI: AI4I 2020 Predictive Maintenance (10,000 machines) | <https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset> |
 | 3 | UCI: Online Retail II (5,939 customers, stored as 44,870 invoices) | <https://archive.ics.uci.edu/dataset/502/online+retail+ii> |
 
+The Kaggle link was rebuilt from the dataset name we recorded. Check that it opens before you submit.
+
 ## Folder structure
 
 ```
@@ -59,32 +80,35 @@ run_all.py                one command runs everything
 app.py                    the dashboard (Streamlit)
 HELP.md                   help file: install, run, use, troubleshoot
 hvac_ml/
-  config.py               every setting in one place (seeds, splits, model settings)
+  config.py               every setting in one place (seeds, splits, model settings, monitoring thresholds)
   data.py                 loads and cleans the three datasets
   pillar1_demand.py       demand forecasting
   pillar2_failure.py      failure prediction
   pillar3_churn.py        churn prediction
   common.py               the models (Ridge, XGBoost, baselines) and the metrics
-  plots.py                all figures
+  monitoring.py           drift and error checks used after deployment
+  plots.py                the first ten figures
+  figs_*.py               the report and slide figures (run report_figures.py to redraw them)
+  report_facts.py         numbers quoted in the documents, saved to outputs/results/facts.json
   run.py                  runs the three pillars and saves the outputs
   data/                   the three datasets
-  tests/                  14 automatic checks
+  tests/                  17 automatic checks
   outputs/                figures, result tables, saved models, log
-docs/                     01 product, 02 data, 03 method, 04 results, 05 future work, 06 viva questions, 07 report plan
+docs/
+  lifecycle/              the ten stage documents
+  05_FUTURE_WORK.md, 06_VIVA_QA.md, 07_REPORT_AND_SLIDES_PLAN.md
+report/
+  HVAC_Service_Planner_Report.docx, .pdf        the report
+  HVAC_Service_Planner_Presentation.pptx, .pdf  the slides
+  src/, build_report.py, build_slides.py        the sources and the scripts that build them
 ```
-
-## Documentation
-
-| File | Contents |
-| :--- | :--- |
-| [docs/01_PRODUCT_AND_PROBLEM.md](docs/01_PRODUCT_AND_PROBLEM.md) | What the product is, who uses it, and the three tasks |
-| [docs/02_DATA.md](docs/02_DATA.md) | The datasets, cleaning, and how the churn table is built |
-| [docs/03_METHOD.md](docs/03_METHOD.md) | Models, features, tests, metrics, and how we avoid fooling ourselves |
-| [docs/04_RESULTS.md](docs/04_RESULTS.md) | All results, with an explanation of every figure |
-| [docs/05_FUTURE_WORK.md](docs/05_FUTURE_WORK.md) | Where XGBoost falls short and where a graph neural network might help |
-| [docs/06_VIVA_QA.md](docs/06_VIVA_QA.md) | Questions we expect, with short answers |
-| [docs/07_REPORT_AND_SLIDES_PLAN.md](docs/07_REPORT_AND_SLIDES_PLAN.md) | Report outline, draft conclusion, slides and the submission checklist |
 
 ## Team
 
-Animesh Basak (26911001), Dhruv Aggarwal (26911004), Ankit Kumar (26911002), Saurav Kumar Boro (26535026), Kriti Vajpayee.
+| Member | Enrollment | Stages |
+| :--- | :--- | :--- |
+| Kriti Vajpayee | 25931008 | 1 Problem definition, 2 Data collection |
+| Dhruv Aggarwal | 25911019 | 3 Data cleaning and preprocessing, 4 Exploratory data analysis |
+| Ankit Kumar | 26911002 | 5 Feature engineering, 6 Model selection |
+| Animesh Basak | 26911001 | 7 Model training, 8 Model evaluation and tuning |
+| Sourav Kumar Boro | 26535026 | 9 Model deployment, 10 Monitoring and maintenance |
