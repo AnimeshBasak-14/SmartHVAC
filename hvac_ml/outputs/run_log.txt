@@ -1,0 +1,19 @@
+17:11:31 | Seeds: [42, 43, 44, 45, 46]
+17:11:31 | Loading data
+17:11:32 | Figures: data exploration
+17:11:33 |   saved figure 01_hvac_power_vs_temperature.png
+17:11:34 |   saved figure 02_ai4i_failure_drivers.png
+17:11:35 |   saved figure 03_churn_base_rates.png
+17:11:35 | Pillar 1: demand forecasting
+17:17:01 | Pillar 2: failure prediction
+17:19:12 | Pillar 3: churn prediction
+17:21:39 | Figures: results
+17:21:40 |   saved figure 04_p1_model_comparison.png
+17:21:40 |   saved figure 05_p1_heatwave_extrapolation.png
+17:21:42 |   saved figure 06_p2_failure_results.png
+17:21:43 |   saved figure 08_p3_churn_results.png
+17:21:43 |   saved figure 10_xgboost_vs_ridge.png
+17:21:43 | Final models on all data
+17:22:04 |   saved figure 07_p2_feature_importance.png
+17:22:05 |   saved figure 09_p3_feature_importance.png
+17:22:05 | Done. See C:\Users\basak\Desktop\CSC-505\Project\hvac_ml\outputs\results\RESULTS_SUMMARY.md

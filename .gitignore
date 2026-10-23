@@ -1,34 +1,16 @@
-# Python & PyTorch
 __pycache__/
 *.py[cod]
-*$py.class
-*.pt
-*.pth
-*.joblib
-*.pkl
-
-# Environments
 .venv/
-env/
 venv/
-ENV/
-
-# Streamlit & Web
+.pytest_cache/
 .streamlit/
-hvac_gml_project/artifacts/pyvis_sub_graph.html
 
-# Data & Large Artifacts
-hvac_gml_project/artifacts/*.pt
-hvac_gml_project/artifacts/*.log
-*.zip
+# the original 45 MB Excel file; the small invoice table in hvac_ml/data/ is enough to run everything
+hvac_ml/data/online_retail_II.xlsx
 *.xlsx
+*.zip
 
-# Specific Folder Exclusions
-docs/New folder/
-docs/New folder
-
-# Microsoft Office temporary files
+# Office temporary files
 ~$*
 .~*
-
-
+hvac_ml/outputs/quick_check/
