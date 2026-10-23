@@ -1,5 +1,0 @@
-,demand_mse,demand_mae,power_mse,power_mae,failure_f1,failure_flagged,sleeper_f1,sleeper_flagged,inventory_mse,inventory_mae,link_auc,total_dossier_loss,train_time_sec
-XGBoost (Tabular),1.5938,0.9147,0.0,0.0022,0.8506,327.0,0.822,264.0,3.1538,1.3352,0.965,5.07,0.3
-Vanilla GCN (Homogeneous),355.6888,14.8349,0.1774,0.329,0.6704,480.0,0.0,0.0,7881.631,84.5139,0.5,8238.83,6.91
-Vanilla GAT (Homogeneous),249.3048,12.7876,0.1861,0.3492,0.6562,459.0,0.0,0.0,324.1891,14.5399,0.5,575.02,7.51
-Hetero-GNN (Ours),33.1296,4.6436,0.0654,0.2086,0.6973,432.0,0.6461,278.0,12.6083,2.778,0.5,46.46,17.0
