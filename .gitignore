@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.streamlit/
+
+# the original 45 MB Excel file; the small invoice table in hvac_ml/data/ is enough to run everything
+hvac_ml/data/online_retail_II.xlsx
+*.xlsx
+*.zip
+
+# Office temporary files
+~$*
+.~*
+hvac_ml/outputs/quick_check/

@@ -1,0 +1,7 @@
+pillar,split,metric,pick,tied_models
+demand,random,mae,XGBoost (basic features),XGBoost (basic features); XGBoost (engineered features)
+demand,unseen_months,mae,XGBoost (basic features),XGBoost (basic features)
+demand,forecast,mae,XGBoost (engineered features),XGBoost (engineered features)
+demand,heatwave,mae,Linear regression (engineered features),Linear regression (engineered features)
+failure,stratified_20pct,pr_auc,Random Forest (engineered features),Random Forest (engineered features); XGBoost (engineered features)
+churn,unseen_customers_later_period,pr_auc,Logistic regression (engineered features),Logistic regression (engineered features); Random Forest (engineered features); Ridge (basic features); Ridge (engineered features); XGBoost (engineered features)
