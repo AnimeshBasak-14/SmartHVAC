@@ -23,10 +23,10 @@ REPORT_FIG_DIR = config.FIG_DIR / "report"
 # who owns which lifecycle stage (from the group's agreed split of the report)
 OWNERS = {
     "Kriti": {"full": "Kriti Vajpayee", "enroll": "25931008", "stages": [1, 2], "color": PURPLE},
-    "Dhruv": {"full": "Dhruv Aggarwal", "enroll": "25911019", "stages": [3, 4], "color": BLUE},
+    "Dhruv": {"full": "Dhruv Aggarwal", "enroll": "26911004", "stages": [3, 4], "color": BLUE},
     "Ankit": {"full": "Ankit Kumar", "enroll": "26911002", "stages": [5, 6], "color": GREEN},
     "Animesh": {"full": "Animesh Basak", "enroll": "26911001", "stages": [7, 8], "color": ORANGE},
-    "Sourav": {"full": "Sourav Kumar Boro", "enroll": "26535026", "stages": [9, 10], "color": RED},
+    "Saurav": {"full": "Saurav Kumar Boro", "enroll": "26535026", "stages": [9, 10], "color": RED},
 }
 STAGES = ["Problem definition", "Data collection", "Data cleaning and preprocessing", "Exploratory data analysis", "Feature engineering",
           "Model selection", "Model training", "Model evaluation and tuning", "Model deployment", "Monitoring and maintenance"]
